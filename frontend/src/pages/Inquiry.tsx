@@ -172,7 +172,7 @@ export default function Inquiry() {
       </section>
       <section className="inquiry-form-section section">
         <div className="container">
-          <form onSubmit={handleSubmit} className="inquiry-form">
+          <form onSubmit={handleSubmit} className="inquiry-form-wrapper">
             <button
               type="button"
               className="inquiry-form-close"
@@ -185,103 +185,118 @@ export default function Inquiry() {
             <input type="hidden" name="utm_source" value={utm.source} />
             <input type="hidden" name="utm_campaign" value={utm.campaign} />
             <input type="hidden" name="utm_medium" value={utm.medium} />
-            {formError && <p className="form-error">{formError}</p>}
-            <div className="form-row">
-              <label htmlFor="name">Name *</label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Your full name"
-                disabled={submitting}
-              />
+            {formError && <p className="form-error" style={{ gridColumn: '1 / -1' }}>{formError}</p>}
+            
+            <div className="inquiry-cards-container">
+              {/* First Card: Personal Info & Source */}
+              <div className="inquiry-card-panel">
+                <h2 className="inquiry-panel-title">Your Details</h2>
+                <div className="form-row">
+                  <label htmlFor="name">Name *</label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="Your full name"
+                    disabled={submitting}
+                  />
+                </div>
+                <div className="form-row">
+                  <label htmlFor="email">Email *</label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="you@example.com"
+                    disabled={submitting}
+                  />
+                </div>
+                <div className="form-row">
+                  <label htmlFor="phone">Phone *</label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    value={form.phone}
+                    onChange={handleChange}
+                    placeholder="11-digit PH mobile"
+                    disabled={submitting}
+                  />
+                </div>
+                <div className="form-row">
+                  <label htmlFor="propertyId">Property</label>
+                  <select
+                    id="propertyId"
+                    name="propertyId"
+                    value={form.propertyId}
+                    onChange={handleChange}
+                    disabled={submitting}
+                  >
+                    <option value="">Select a property (optional)</option>
+                    {propertyOptions.map((p) => (
+                      <option key={p.id} value={p.id}>{p.title} — {p.price}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-row">
+                  <label htmlFor="sourceManual">How did you find us?</label>
+                  <select
+                    id="sourceManual"
+                    name="sourceManual"
+                    value={form.sourceManual}
+                    onChange={handleChange}
+                    disabled={submitting}
+                  >
+                    {SOURCE_OPTIONS.map((o) => (
+                      <option key={o.value || 'empty'} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Second Card: Preferences & Message */}
+              <div className="inquiry-card-panel">
+                <h2 className="inquiry-panel-title">Your Preferences</h2>
+                <div className="form-row form-row--full">
+                  <LeadQualificationFields
+                    values={{
+                      budgetRange: form.budgetRange,
+                      buyingTimeline: form.buyingTimeline,
+                      financingMethod: form.financingMethod,
+                      employmentStatus: form.employmentStatus,
+                    }}
+                    onChange={handleChange}
+                    disabled={submitting}
+                  />
+                </div>
+                <div className="form-row">
+                  <label htmlFor="message">Message *</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    required
+                    rows={6}
+                    value={form.message}
+                    onChange={handleChange}
+                    placeholder="What are you looking for? Budget, location, or specific questions..."
+                    disabled={submitting}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="form-row">
-              <label htmlFor="email">Email *</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                disabled={submitting}
-              />
+
+            <div className="inquiry-submit-sticky">
+              <button type="submit" className="btn btn-primary btn-lg" disabled={submitting}>
+                {submitting ? 'Sending…' : 'Submit Inquiry'}
+              </button>
             </div>
-            <div className="form-row">
-              <label htmlFor="phone">Phone *</label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="11-digit PH mobile"
-                disabled={submitting}
-              />
-            </div>
-            <div className="form-row">
-              <label htmlFor="propertyId">Property</label>
-              <select
-                id="propertyId"
-                name="propertyId"
-                value={form.propertyId}
-                onChange={handleChange}
-                disabled={submitting}
-              >
-                <option value="">Select a property (optional)</option>
-                {propertyOptions.map((p) => (
-                  <option key={p.id} value={p.id}>{p.title} — {p.price}</option>
-                ))}
-              </select>
-            </div>
-            <div className="form-row">
-              <label htmlFor="sourceManual">How did you find us?</label>
-              <select
-                id="sourceManual"
-                name="sourceManual"
-                value={form.sourceManual}
-                onChange={handleChange}
-                disabled={submitting}
-              >
-                {SOURCE_OPTIONS.map((o) => (
-                  <option key={o.value || 'empty'} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="form-row form-row--full">
-              <LeadQualificationFields
-                values={{
-                  budgetRange: form.budgetRange,
-                  buyingTimeline: form.buyingTimeline,
-                  financingMethod: form.financingMethod,
-                  employmentStatus: form.employmentStatus,
-                }}
-                onChange={handleChange}
-                disabled={submitting}
-              />
-            </div>
-            <div className="form-row">
-              <label htmlFor="message">Message *</label>
-              <textarea
-                id="message"
-                name="message"
-                required
-                rows={5}
-                value={form.message}
-                onChange={handleChange}
-                placeholder="What are you looking for? Budget, location, or specific questions..."
-                disabled={submitting}
-              />
-            </div>
-            <button type="submit" className="btn btn-primary btn-lg" disabled={submitting}>
-              {submitting ? 'Sending…' : 'Submit Inquiry'}
-            </button>
           </form>
         </div>
       </section>

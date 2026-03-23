@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AuthSessionListener from './components/AuthSessionListener'
 import MarketingAttributionSync from './components/MarketingAttributionSync'
@@ -26,6 +27,21 @@ import ActivityLog from './pages/admin/ActivityLog'
 import Reports from './pages/admin/Reports'
 
 export default function App() {
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const btn = (e.target as HTMLElement).closest('.btn') as HTMLElement
+      if (btn) {
+        const rect = btn.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        btn.style.setProperty('--btn-mouse-x', `${x}px`)
+        btn.style.setProperty('--btn-mouse-y', `${y}px`)
+      }
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+
   return (
     <BrowserRouter>
       <MarketingAttributionSync />

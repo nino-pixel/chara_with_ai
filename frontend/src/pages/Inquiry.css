@@ -1,20 +1,75 @@
-.inquiry-page .inquiry-hero { }
 .inquiry-form-section { padding: 2rem 0 3rem; }
-.inquiry-form {
-  max-width: 560px;
+.inquiry-form-wrapper {
+  max-width: 1140px;
   margin: 0 auto;
-  background: var(--color-surface);
-  padding: 2rem;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--color-border);
   position: relative;
-  animation: inquiryFormIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
+.inquiry-cards-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 800px) {
+  .inquiry-cards-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.inquiry-panel-title {
+  margin: 0 0 1.5rem;
+  font-size: 1.25rem;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.inquiry-card-panel {
+  background: var(--glass-bg, rgba(255, 255, 255, 0.65));
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: var(--glass-border, 1px solid rgba(255, 255, 255, 0.7));
+  padding: 2.5rem;
+  border-radius: var(--radius-lg, 24px);
+  box-shadow: var(--shadow-sm);
+  animation: inquiryFormIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+.inquiry-cards-container .inquiry-card-panel:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+[data-theme="dark"] .inquiry-card-panel {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.inquiry-submit-sticky {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  animation: inquiryFormIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+.inquiry-submit-sticky .btn {
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2) !important;
+}
+
 @keyframes inquiryFormIn {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import PageTransition from '../../components/PageTransition'
 import { useAdminAuth } from '../../context/AdminAuth'
@@ -25,11 +25,23 @@ export default function AdminLogin() {
   const { loginWithCredentials, isAuthenticated, isReady } = useAdminAuth()
   const navigate = useNavigate()
   useScrollTopOnRouteChange()
+  const loginRootRef = useRef<HTMLDivElement>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // Global mouse glow tracker for the spotlight effect
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!loginRootRef.current) return
+      loginRootRef.current.style.setProperty('--mouse-x', `${e.clientX}px`)
+      loginRootRef.current.style.setProperty('--mouse-y', `${e.clientY}px`)
+    }
+    window.addEventListener('mousemove', handleGlobalMouseMove)
+    return () => window.removeEventListener('mousemove', handleGlobalMouseMove)
+  }, [])
 
   useEffect(() => {
     if (isReady && isAuthenticated) {
@@ -82,7 +94,8 @@ export default function AdminLogin() {
 
   return (
     <PageTransition>
-      <div className="admin-login-page">
+      <div className="admin-login-page" ref={loginRootRef}>
+        <div className="admin-login-spotlight"></div>
         <div className="admin-login-card">
         <h1 className="admin-login-title">Admin Login</h1>
         <p className="admin-login-subtitle">CHara Realty Admin System</p>

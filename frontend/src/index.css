@@ -56,7 +56,7 @@
 html {
   scroll-behavior: smooth;
   font-size: 15px; /* slightly larger for readability */
-  overflow-x: hidden;
+  overflow-x: clip; /* clip instead of hidden so scroll-snap doesn't break */
   width: 100%;
 }
 body {
@@ -129,45 +129,306 @@ a:hover {
   font-weight: 300;
   max-width: 600px;
 }
+/* ── Universal Glass & Live Colors Button Design ── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.75rem 1.75rem;
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 1rem;
-  border-radius: var(--radius);
-  border: 1px solid transparent;
+  
+  /* The Glass Pill */
+  border-radius: 9999px; /* Complete pill shape like the reference image */
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  color: var(--color-text);
+  
   cursor: pointer;
   text-decoration: none;
   transition: all var(--duration) var(--ease);
   letter-spacing: 0.01em;
-}
-.btn:active { 
-  transform: scale(0.96); 
+  
+  /* Preparation for live colors */
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
 
-/* Premium Primary Button with Glow on Hover */
-.btn-primary { 
-  background: var(--color-accent); 
-  color: #fff; 
-  border-color: var(--color-accent); 
-  box-shadow: var(--shadow-sm);
+[data-theme="dark"] .btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
-.btn-primary:hover { 
-  background: var(--color-accent-hover); 
-  border-color: var(--color-accent-hover); 
-  color: #fff; 
-  box-shadow: 0 8px 20px rgba(193, 155, 108, 0.4); /* Champagne gold glow */
+
+/* The "live colors" blob that follows the cursor like water */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: var(--btn-mouse-y, 50%);
+  left: var(--btn-mouse-x, 50%);
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  z-index: -1;
+  background: conic-gradient(
+    from 0deg,
+    #ff7eb3, /* pink */
+    #8b5cf6, /* purple */
+    #3b82f6, /* blue */
+    #2dd4bf, /* teal */
+    #fcd34d, /* yellow */
+    #ff7eb3  /* back to pink for seamless loop */
+  );
+  filter: blur(24px);
+  opacity: 0; /* Hidden by default */
+  animation: btn-live-colors 4s linear infinite;
+  pointer-events: none;
+  /* The slow transition on top/left creates the fluid water dragging effect */
+  transition: opacity 0.4s ease, top 0.15s ease-out, left 0.15s ease-out;
+}
+
+[data-theme="dark"] .btn::before {
+  opacity: 0;
+}
+
+/* On hover, the colors appear and spin faster */
+.btn:hover::before {
+  opacity: 0.85;
+  animation-duration: 2s;
+}
+
+[data-theme="dark"] .btn:hover::before {
+  opacity: 1;
+}
+
+/* On hover, outer glowing drop-shadow & lift */
+.btn:hover {
   transform: translateY(-2px);
+  box-shadow: 
+    0 12px 24px rgba(139, 92, 246, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  border-color: rgba(255, 255, 255, 1);
 }
+
+[data-theme="dark"] .btn:hover {
+  box-shadow: 
+    0 12px 24px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn:active { 
+  transform: scale(0.96) translateY(0); 
+}
+
+@keyframes btn-live-colors {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Base button variants are no longer needed for color since they all share the live color glassmorphism, 
+   but we'll keep the classes for sizing/specifics */
 .btn-lg { 
-  padding: 0.875rem 2.25rem; 
+  padding: 0.85rem 2.25rem; 
   font-size: 1.125rem; 
+}
+.btn-outline {
+  /* Still glass, but maybe less opacity for outline feel */
+  background: rgba(255, 255, 255, 0.2);
+}
+[data-theme="dark"] .btn-outline {
+  background: rgba(0, 0, 0, 0.2);
+}
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 /* SweetAlert2 overlaps */
 .swal2-container {
   z-index: 20000 !important;
+}
+
+/* ============================================================
+   DARK MODE — activated by [data-theme="dark"] on <html>
+   ============================================================ */
+[data-theme="dark"] {
+  --color-bg: #0f0f0f;
+  --color-bg-alt: #1a1a1a;
+  --color-surface: #141414;
+  --color-hero: #050505;
+  --color-hero-muted: #111111;
+  --color-text: #f0f0f0;
+  --color-text-muted: #9ca3af;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --glass-bg: rgba(20, 20, 20, 0.8);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+
+/* Dark mode specific overrides — Glassmorphism + Shine */
+
+/* ── Shared glass mixin applied to card surfaces (universal for both modes) ── */
+.home-testimonial-card,
+.property-card,
+.dashboard-card,
+.dashboard-chart-wrap {
+  background: var(--glass-bg, rgba(255, 255, 255, 0.65));
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: var(--glass-border, 1px solid rgba(255, 255, 255, 0.7));
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .home-testimonial-card,
+[data-theme="dark"] .property-card,
+[data-theme="dark"] .dashboard-card,
+[data-theme="dark"] .dashboard-chart-wrap {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Table wraps get a simpler style — no overflow:hidden so scroll still works */
+.admin-table-wrap {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+[data-theme="dark"] .admin-table-wrap {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Animated diagonal "shine" sweep on card surfaces only */
+.home-testimonial-card::after,
+.property-card::after,
+.dashboard-card::after,
+.dashboard-chart-wrap::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 60%
+  );
+  transform: skewX(-20deg);
+  animation: card-shine 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="dark"] .home-testimonial-card::after,
+[data-theme="dark"] .property-card::after,
+[data-theme="dark"] .dashboard-card::after,
+[data-theme="dark"] .dashboard-chart-wrap::after {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.07) 50%,
+    transparent 60%
+  );
+}
+
+/* Stagger shine animation so not all cards animate at once */
+.home-testimonial-card:nth-child(2)::after,
+.dashboard-card:nth-child(2)::after { animation-delay: -1.5s; }
+.home-testimonial-card:nth-child(3)::after,
+.dashboard-card:nth-child(3)::after { animation-delay: -3s; }
+.home-testimonial-card:nth-child(4)::after,
+.dashboard-card:nth-child(4)::after { animation-delay: -4.5s; }
+.dashboard-card:nth-child(5)::after { animation-delay: -2s; }
+.dashboard-card:nth-child(6)::after { animation-delay: -3.5s; }
+
+@keyframes card-shine {
+  0%   { left: -75%; opacity: 0; }
+  10%  { opacity: 1; }
+  40%  { left: 130%; opacity: 0; }
+  100% { left: 130%; opacity: 0; }
+}
+
+/* Hover: slightly brighter glass on card hover */
+.property-card:hover,
+.dashboard-card:hover {
+  background: var(--glass-bg, rgba(255, 255, 255, 0.8));
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .property-card:hover,
+[data-theme="dark"] .dashboard-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Colour-coded dashboard stat cards — tinted glass versions */
+[data-theme="dark"] .dashboard-card--blue  { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.25); }
+[data-theme="dark"] .dashboard-card--green { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.25); }
+[data-theme="dark"] .dashboard-card--teal  { background: rgba(20, 184, 166, 0.1); border-color: rgba(20, 184, 166, 0.25); }
+[data-theme="dark"] .dashboard-card--yellow{ background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.25); }
+[data-theme="dark"] .dashboard-card--red   { background: rgba(220, 38, 38, 0.1);  border-color: rgba(220, 38, 38, 0.25); }
+[data-theme="dark"] .dashboard-card--purple{ background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.25); }
+
+/* Stat value colours stay vivid */
+[data-theme="dark"] .dashboard-card--blue  .admin-stat-value { color: #93c5fd; }
+[data-theme="dark"] .dashboard-card--green .admin-stat-value { color: #6ee7b7; }
+[data-theme="dark"] .dashboard-card--teal  .admin-stat-value { color: #5eead4; }
+[data-theme="dark"] .dashboard-card--yellow .admin-stat-value { color: #fcd34d; }
+[data-theme="dark"] .dashboard-card--red   .admin-stat-value { color: #fca5a5; }
+[data-theme="dark"] .dashboard-card--purple .admin-stat-value { color: #c4b5fd; }
+
+/* Other dark overrides */
+[data-theme="dark"] .home-trust {
+  background: rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.06);
+}
+[data-theme="dark"] .page-hero {
+  background: linear-gradient(135deg, #050505, #111);
+}
+
+/* Tooltip dark */
+[data-theme="dark"] .recharts-default-tooltip {
+  background: rgba(20, 20, 20, 0.9) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  backdrop-filter: blur(12px);
+}
+
+/* Smooth colour transitions across theme switch */
+body, .header, .property-card, .home-testimonial-card,
+.dashboard-card, .dashboard-chart-wrap, .admin-table-wrap {
+  transition: background-color 0.4s ease, color 0.4s ease,
+              border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="dark"] .home-testimonial-card::after,
+  [data-theme="dark"] .property-card::after,
+  [data-theme="dark"] .dashboard-card::after,
+  [data-theme="dark"] .dashboard-chart-wrap::after,
+  [data-theme="dark"] .admin-table-wrap::after {
+    display: none;
+  }
 }

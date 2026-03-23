@@ -9,8 +9,8 @@ import {
   HiOutlineRefresh,
 } from 'react-icons/hi'
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -343,58 +343,22 @@ export default function AdminDashboard() {
                   margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                  <XAxis type="number" tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
                   <YAxis
                     type="category"
                     dataKey="stage"
                     width={72}
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 13 }}
                     stroke="var(--color-text-muted)"
                   />
                   <Tooltip />
                   <Legend />
-                  <Bar
-                    dataKey="inquiry"
-                    stackId="pipeline"
-                    fill="#3b82f6"
-                    name="Inquiry"
-                    onClick={() => handleDealsPipelineClick('inquiry')}
-                  />
-                  <Bar
-                    dataKey="negotiating"
-                    stackId="pipeline"
-                    fill="#f97316"
-                    name="Negotiation"
-                    onClick={() => handleDealsPipelineClick('negotiating')}
-                  />
-                  <Bar
-                    dataKey="reserved"
-                    stackId="pipeline"
-                    fill="#8b5cf6"
-                    name="Reserved"
-                    onClick={() => handleDealsPipelineClick('reserved')}
-                  />
-                  <Bar
-                    dataKey="processing"
-                    stackId="pipeline"
-                    fill="#6366f1"
-                    name="Processing Documents"
-                    onClick={() => handleDealsPipelineClick('processing')}
-                  />
-                  <Bar
-                    dataKey="closed"
-                    stackId="pipeline"
-                    fill="#16a34a"
-                    name="Closed"
-                    onClick={() => handleDealsPipelineClick('closed')}
-                  />
-                  <Bar
-                    dataKey="cancelled"
-                    stackId="pipeline"
-                    fill="#ef4444"
-                    name="Cancelled"
-                    onClick={() => handleDealsPipelineClick('cancelled')}
-                  />
+                  <Bar className="bar-inquiry" dataKey="inquiry" stackId="pipeline" fill="#3b82f6" name="Inquiry" onClick={() => handleDealsPipelineClick('inquiry')} />
+                  <Bar className="bar-negotiating" dataKey="negotiating" stackId="pipeline" fill="#f97316" name="Negotiation" onClick={() => handleDealsPipelineClick('negotiating')} />
+                  <Bar className="bar-reserved" dataKey="reserved" stackId="pipeline" fill="#8b5cf6" name="Reserved" onClick={() => handleDealsPipelineClick('reserved')} />
+                  <Bar className="bar-processing" dataKey="processing" stackId="pipeline" fill="#6366f1" name="Processing Documents" onClick={() => handleDealsPipelineClick('processing')} />
+                  <Bar className="bar-closed" dataKey="closed" stackId="pipeline" fill="#16a34a" name="Closed" onClick={() => handleDealsPipelineClick('closed')} />
+                  <Bar className="bar-cancelled" dataKey="cancelled" stackId="pipeline" fill="#ef4444" name="Cancelled" onClick={() => handleDealsPipelineClick('cancelled')} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -411,10 +375,10 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={inquiriesPerMonth} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                  <XAxis dataKey="month" tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
+                  <YAxis tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
                   <Tooltip />
-                  <Bar dataKey="count" fill="#4a6b7a" radius={[4, 4, 0, 0]} name="Leads" />
+                  <Bar className="bar-leads" dataKey="count" fill="#4a6b7a" radius={[4, 4, 0, 0]} name="Leads" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -426,25 +390,57 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      {/* 2. Line chart — Sales trend (deal amount per month, Jan–Dec) */}
+      {/* 2. Area chart — Sales trend */}
       <section className="dashboard-section dashboard-chart-block">
         <h2 className="dashboard-chart-title">Monthly Sales (Deal Amount)</h2>
         <div className="dashboard-chart-wrap dashboard-chart-wrap--line">
           {monthlySalesHasData ? (
             <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={monthlySalesData} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-text-muted)" />
-                <YAxis tickFormatter={(v) => formatPeso(v)} tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+              <AreaChart data={monthlySalesData} margin={{ top: 16, right: 24, left: 8, bottom: 8 }}>
+                <defs>
+                  <linearGradient id="salesAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#c19b6c" stopOpacity={0.45} />
+                    <stop offset="95%" stopColor="#c19b6c" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 13, fill: 'var(--color-text-muted)' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tickFormatter={(v) => formatPeso(v)}
+                  tick={{ fontSize: 13, fill: 'var(--color-text-muted)' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={70}
+                />
                 <Tooltip
                   formatter={(v: number | undefined) => [v != null ? formatPeso(v) : '—', 'Sales']}
                   labelFormatter={(l) => `Month: ${l}`}
+                  contentStyle={{
+                    background: 'rgba(20,20,20,0.92)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                  }}
                 />
-                <Line type="monotone" dataKey="total" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 4 }} name="Sales" />
-              </LineChart>
+                <Area
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#c19b6c"
+                  strokeWidth={2.5}
+                  fill="url(#salesAreaGradient)"
+                  dot={false}
+                  activeDot={{ r: 5, fill: '#c19b6c', strokeWidth: 0 }}
+                  name="Sales"
+                />
+              </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div style={{ minHeight: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ minHeight: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>
               No data available
             </div>
           )}
@@ -460,10 +456,10 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={clientSourceData} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
-                  <YAxis type="category" dataKey="source" width={72} tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                  <XAxis type="number" tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
+                  <YAxis type="category" dataKey="source" width={72} tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
                   <Tooltip />
-                  <Bar dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} name="Clients" />
+                  <Bar className="bar-clients" dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} name="Clients" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -494,7 +490,7 @@ export default function AdminDashboard() {
                     ))}
                   </Pie>
                   <Tooltip formatter={(v: number | undefined) => [v ?? '—', 'Units']} />
-                  <Legend iconSize={8} iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                  <Legend iconSize={10} iconType="circle" wrapperStyle={{ fontSize: '13px' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (

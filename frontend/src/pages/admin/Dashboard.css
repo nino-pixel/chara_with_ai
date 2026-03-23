@@ -69,11 +69,11 @@
 .dashboard-card--purple { background: #ede9fe; border: 1px solid #c4b5fd; }
 .dashboard-card--purple .admin-stat-value { color: #5b21b6; }
 
-.dashboard-card .admin-stat-value { display: block; font-size: 1.6875rem; font-weight: 700; }
-.dashboard-card .admin-stat-label { font-size: 0.95rem; color: var(--color-text-muted); }
+.dashboard-card .admin-stat-value { display: block; font-size: 2rem; font-weight: 700; }
+.dashboard-card .admin-stat-label { font-size: 1rem; color: var(--color-text-muted); }
 
 /* Chart blocks */
-.dashboard-chart-title { font-size: 1.125rem; margin: 0 0 0.75rem; font-weight: 600; }
+.dashboard-chart-title { font-size: 1.25rem; margin: 0 0 0.75rem; font-weight: 600; }
 .dashboard-chart-block { margin-bottom: 1.5rem; }
 .dashboard-chart-wrap {
   background: var(--color-surface);
@@ -152,8 +152,69 @@
 }
 .recharts-legend-item-text { color: var(--color-text); }
 
-/* Property Status pie — smaller legend only (no segment labels) */
-.dashboard-chart-wrap--pie .recharts-legend-wrapper { font-size: 11px; }
+/* Property Status pie — slightly larger legend */
+.dashboard-chart-wrap--pie .recharts-legend-wrapper { font-size: 13px; }
 .dashboard-chart-wrap--pie .recharts-legend-item { margin-right: 10px; margin-bottom: 2px; }
-.dashboard-chart-wrap--pie .recharts-legend-item-text { font-size: 11px; }
-.dashboard-chart-wrap--pie .recharts-legend-icon { width: 8px; height: 8px; }
+.dashboard-chart-wrap--pie .recharts-legend-item-text { font-size: 13px; }
+.dashboard-chart-wrap--pie .recharts-legend-icon { width: 10px; height: 10px; }
+
+/* ── Universal: Professional chart theme ── */
+
+/* Remove glassmorphism fill-opacity from bars — solid colors look more professional */
+.recharts-bar-rectangle path {
+  fill-opacity: 1;
+  stroke: none;
+}
+
+/* Area chart line — subtle champagne glow */
+.recharts-area-curve {
+  filter: drop-shadow(0 0 5px rgba(193, 155, 108, 0.3));
+}
+[data-theme="dark"] .recharts-area-curve {
+  filter: drop-shadow(0 0 5px rgba(193, 155, 108, 0.55));
+}
+
+/* Grid lines — very subtle horizontal only */
+.recharts-cartesian-grid line {
+  stroke: rgba(0, 0, 0, 0.05);
+}
+[data-theme="dark"] .recharts-cartesian-grid line {
+  stroke: rgba(255, 255, 255, 0.05);
+}
+
+/* Tooltip */
+.recharts-default-tooltip {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(12px);
+  border-radius: 10px !important;
+}
+[data-theme="dark"] .recharts-default-tooltip {
+  background: rgba(20, 20, 20, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Pie slices — solid, clean, with very subtle outer ring */
+.recharts-pie path {
+  fill-opacity: 1;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+[data-theme="dark"] .recharts-pie path {
+  stroke: #141414;
+}
+
+/* Specific text colors for dark mode to ensure contrast */
+[data-theme="dark"] .dashboard-chart-wrap {
+  background: #141414;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .recharts-cartesian-axis-tick text {
+  fill: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .recharts-legend-item-text {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+

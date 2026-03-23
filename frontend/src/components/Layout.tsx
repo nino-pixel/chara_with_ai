@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { HiMoon, HiSun } from 'react-icons/hi'
 import { useInquiryLink, useMarketingLinkTo } from '../hooks/useMarketingLinkTo'
 import { useSavedPropertiesCount } from '../hooks/useSavedProperties'
 import { useScrollTopOnRouteChange } from '../hooks/useScrollTopOnRouteChange'
+import { useDarkMode } from '../hooks/useDarkMode'
 import PageTransition from './PageTransition'
 import faviconLogo from '../assets/favicon.png'
 import './Layout.css'
@@ -12,6 +14,7 @@ export default function Layout() {
   const location = useLocation()
   const [navOpen, setNavOpen] = useState(false)
   const savedCount = useSavedPropertiesCount()
+  const { dark, toggle: toggleDark } = useDarkMode()
   useScrollTopOnRouteChange()
 
   useEffect(() => {
@@ -113,6 +116,15 @@ export default function Layout() {
               Login
             </Link>
           </nav>
+          <button
+            type="button"
+            className="btn-dark-mode"
+            onClick={toggleDark}
+            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={dark ? 'Light mode' : 'Dark mode'}
+          >
+            {dark ? <HiSun aria-hidden /> : <HiMoon aria-hidden />}
+          </button>
         </div>
       </header>
       <main className="main">

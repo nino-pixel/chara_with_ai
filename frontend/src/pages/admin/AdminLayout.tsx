@@ -1,8 +1,9 @@
 import { AnimatePresence } from 'framer-motion'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { HiOutlineChevronLeft, HiOutlineMenu } from 'react-icons/hi'
+import { HiOutlineChevronLeft, HiOutlineMenu, HiMoon, HiSun } from 'react-icons/hi'
 import { useAdminAuth } from '../../context/AdminAuth'
+import { useDarkMode } from '../../hooks/useDarkMode'
 import PageTransition from '../../components/PageTransition'
 import { useScrollTopOnRouteChange } from '../../hooks/useScrollTopOnRouteChange'
 import faviconLogo from '../../assets/favicon.png'
@@ -12,6 +13,7 @@ export default function AdminLayout() {
   const location = useLocation()
   const { user, logout } = useAdminAuth()
   const navigate = useNavigate()
+  const { dark, toggle: toggleDark } = useDarkMode()
   useScrollTopOnRouteChange()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [expandButtonTop, setExpandButtonTop] = useState(50)
@@ -103,6 +105,16 @@ export default function AdminLayout() {
         </nav>
         <div className="admin-sidebar-footer">
           <span className="admin-sidebar-user">{user?.name ?? '—'}</span>
+          <button
+            type="button"
+            className="admin-dark-mode-btn"
+            onClick={toggleDark}
+            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={dark ? 'Light mode' : 'Dark mode'}
+          >
+            {dark ? <HiSun aria-hidden /> : <HiMoon aria-hidden />}
+            {dark ? 'Light Mode' : 'Dark Mode'}
+          </button>
           <button type="button" className="admin-logout-btn" onClick={handleLogout}>
             Logout
           </button>

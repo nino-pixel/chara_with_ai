@@ -290,3 +290,49 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Dark-mode toggle button */
+.btn-dark-mode {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  margin-left: 0.75rem;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  transition: background var(--duration) var(--ease),
+              color var(--duration) var(--ease),
+              box-shadow var(--duration) var(--ease),
+              transform 0.2s var(--ease);
+  box-shadow: var(--shadow-sm);
+}
+.btn-dark-mode:hover {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 14px rgba(193, 155, 108, 0.45);
+  transform: scale(1.08) rotate(12deg);
+}
+.btn-dark-mode:active {
+  transform: scale(0.95);
+}
+
+/* Dark-mode: sun icon glows yellow */
+[data-theme="dark"] .btn-dark-mode {
+  background: #1f1f1f;
+  border-color: rgba(255,255,255,0.1);
+  color: #f0d080;
+}
+[data-theme="dark"] .btn-dark-mode:hover {
+  background: #f0d080;
+  color: #111;
+  border-color: #f0d080;
+  box-shadow: 0 0 18px rgba(240, 208, 128, 0.5);
+}
