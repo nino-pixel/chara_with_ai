@@ -81,6 +81,23 @@
   padding: 0.6rem 1.25rem;
   font-size: 0.95rem;
 }
+.admin-sidebar-nav-ai {
+  display: flex !important;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(193, 155, 108, 0.15) !important;
+  color: var(--color-accent) !important;
+  margin: 0.5rem 0;
+  font-weight: 600;
+  border-left: 3px solid var(--color-accent);
+}
+.admin-sidebar-nav-ai:hover {
+  background: rgba(193, 155, 108, 0.25) !important;
+}
+.nav-ai-icon {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 0 5px rgba(193, 155, 108, 0.5));
+}
 .admin-sidebar-footer {
   padding: 1rem 1.25rem;
   border-top: 1px solid rgba(255,255,255,0.12);

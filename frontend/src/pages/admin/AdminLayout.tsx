@@ -1,7 +1,7 @@
 import { AnimatePresence } from 'framer-motion'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { HiOutlineChevronLeft, HiOutlineMenu, HiMoon, HiSun } from 'react-icons/hi'
+import { HiOutlineChevronLeft, HiOutlineMenu, HiMoon, HiSun, HiOutlineSparkles } from 'react-icons/hi'
 import { useAdminAuth } from '../../context/AdminAuth'
 import { useDarkMode } from '../../hooks/useDarkMode'
 import Swal from 'sweetalert2'
@@ -110,6 +110,9 @@ export default function AdminLayout() {
         </div>
         <nav className="admin-sidebar-nav">
           <Link to="/admin/dashboard">Dashboard</Link>
+          <Link to="/admin/assistant" className="admin-sidebar-nav-ai">
+            <HiOutlineSparkles className="nav-ai-icon" /> AI Assistant
+          </Link>
           <Link to="/admin/clients">Clients</Link>
           <Link to="/admin/properties">Properties</Link>
           <Link to="/admin/deals">Deals</Link>

@@ -115,7 +115,7 @@ export default function AdminDashboard() {
   const currentYear = now.getFullYear()
   const currentMonth = now.getMonth()
 
-  const activeListings = properties.filter((p) => p.status !== 'archived' && !p.archived).length
+  const activeListings = properties.filter((p) => !p.archived && ['available', 'under_negotiation'].includes(p.status)).length
   const totalClients = clients.filter((c) => !c.archived).length
 
   const newLeadsThisMonth = inquiries.filter((lead) => {

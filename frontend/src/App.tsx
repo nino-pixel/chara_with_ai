@@ -25,6 +25,7 @@ import AdminUsers from './pages/admin/AdminUsers'
 import Inquiries from './pages/admin/Inquiries'
 import ActivityLog from './pages/admin/ActivityLog'
 import Reports from './pages/admin/Reports'
+import AiAssistant from './pages/admin/AiAssistant'
 
 export default function App() {
   useEffect(() => {
@@ -72,6 +73,7 @@ export default function App() {
             <Route path="activity" element={<ActivityLog />} />
             <Route path="reports" element={<Reports />} />
             <Route path="users" element={<AdminUsers />} />
+            <Route path="assistant" element={<AiAssistant />} />
           </Route>
         </Route>
       </Routes>
