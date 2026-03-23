@@ -155,6 +155,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Type</label>
               <select
+                className="admin-input"
                 value={form.type ?? 'House'}
                 onChange={(e) => update('type', e.target.value as PropertyType)}
               >
@@ -183,6 +184,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Status</label>
               <select
+                className="admin-input"
                 value={form.status ?? 'draft'}
                 onChange={(e) => update('status', e.target.value as PropertyStatus)}
               >
@@ -280,6 +282,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Negotiable?</label>
               <select
+                className="admin-input"
                 value={form.negotiable === true ? 'yes' : form.negotiable === false ? 'no' : ''}
                 onChange={(e) => update('negotiable', e.target.value === 'yes')}
               >
@@ -565,6 +568,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Status</label>
               <select
+                className="admin-input"
                 value={form.status ?? 'draft'}
                 onChange={(e) => update('status', e.target.value as PropertyStatus)}
               >
@@ -718,6 +722,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Furnished?</label>
               <select
+                className="admin-input"
                 value={form.furnished === true ? 'yes' : form.furnished === false ? 'no' : ''}
                 onChange={(e) => update('furnished', e.target.value === 'yes')}
               >
@@ -784,6 +789,7 @@ export default function PropertyFormModal({
             <div className="admin-form-row">
               <label>Title type</label>
               <select
+                className="admin-input"
                 value={form.titleType ?? ''}
                 onChange={(e) => update('titleType', e.target.value === '' ? undefined : (e.target.value as 'TCT' | 'CCT'))}
               >

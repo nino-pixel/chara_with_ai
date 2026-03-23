@@ -114,25 +114,7 @@
   vertical-align: middle;
 }
 
-/* Follow-up = full row tint (open leads with nextFollowUpAt) */
-.inquiries-table tbody tr.admin-inquiry-row--followup-overdue td {
-  background: #fef2f2;
-}
-.inquiries-table tbody tr.admin-inquiry-row--followup-overdue:hover td {
-  background: #fee2e2;
-}
-.inquiries-table tbody tr.admin-inquiry-row--followup-today td {
-  background: #fff7ed;
-}
-.inquiries-table tbody tr.admin-inquiry-row--followup-today:hover td {
-  background: #ffedd5;
-}
-.inquiries-table tbody tr.admin-inquiry-row--followup-upcoming td {
-  background: #f9fafb;
-}
-.inquiries-table tbody tr.admin-inquiry-row--followup-upcoming:hover td {
-  background: #f3f4f6;
-}
+
 
 .admin-inquiries-legend--followup-rows {
   max-width: none;
@@ -160,17 +142,25 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 .admin-inquiries-legend-swatch--overdue {
-  background: #fef2f2;
-  box-shadow: inset 0 0 0 1px #fecaca;
+  background: rgba(254, 242, 242, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.3);
+  border-left: 3px solid #ef4444;
 }
 .admin-inquiries-legend-swatch--today {
-  background: #fff7ed;
-  box-shadow: inset 0 0 0 1px #fed7aa;
+  background: rgba(255, 247, 237, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.3);
+  border-left: 3px solid #f97316;
 }
 .admin-inquiries-legend-swatch--upcoming {
-  background: #f9fafb;
-  box-shadow: inset 0 0 0 1px #e5e7eb;
+  background: rgba(249, 250, 251, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.3);
+  border-left: 3px solid #94a3b8;
 }
+
+/* Dark Mode Legend Refinements */
+[data-theme="dark"] .admin-inquiries-legend-swatch--overdue { background: rgba(239, 68, 68, 0.1); }
+[data-theme="dark"] .admin-inquiries-legend-swatch--today { background: rgba(249, 115, 22, 0.1); }
+[data-theme="dark"] .admin-inquiries-legend-swatch--upcoming { background: rgba(148, 163, 184, 0.1); }
 
 .col-actions--inquiry {
   white-space: nowrap;
@@ -245,25 +235,37 @@ tr.admin-inquiry-row--flash {
   gap: 0.45rem;
 }
 .admin-inquiry-status-select--new {
-  background: #dbeafe;
+  background-color: rgba(219, 234, 254, 0.7);
   color: #1e40af;
+  border-color: #bfdbfe;
 }
 .admin-inquiry-status-select--contacted {
-  background: #fef3c7;
+  background-color: rgba(254, 243, 199, 0.7);
   color: #92400e;
+  border-color: #fde68a;
 }
 .admin-inquiry-status-select--qualified {
-  background: #dbeafe;
+  background-color: rgba(219, 234, 254, 0.7);
   color: #1e40af;
+  border-color: #bfdbfe;
 }
 .admin-inquiry-status-select--converted {
-  background: #bbf7d0;
+  background-color: rgba(187, 247, 208, 0.7);
   color: #14532d;
+  border-color: #86efac;
 }
 .admin-inquiry-status-select--lost {
-  background: #fee2e2;
+  background-color: rgba(254, 226, 226, 0.7);
   color: #b91c1c;
+  border-color: #fecaca;
 }
+
+/* Dark Mode status selects */
+[data-theme="dark"] .admin-inquiry-status-select--new { background-color: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3); }
+[data-theme="dark"] .admin-inquiry-status-select--contacted { background-color: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: rgba(245, 158, 11, 0.3); }
+[data-theme="dark"] .admin-inquiry-status-select--qualified { background-color: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3); }
+[data-theme="dark"] .admin-inquiry-status-select--converted { background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
+[data-theme="dark"] .admin-inquiry-status-select--lost { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
 
 .admin-inquiry-assigned-select {
   min-width: 180px;
@@ -278,14 +280,23 @@ tr.admin-inquiry-row--flash {
   color: var(--color-text-muted);
 }
 
-.admin-badge--source-facebook { background: #dbeafe; color: #1e40af; }
-.admin-badge--source-website { background: #d1fae5; color: #065f46; }
-.admin-badge--source-walk-in { background: #ffedd5; color: #c2410c; }
-.admin-badge--source-referral { background: #ede9fe; color: #5b21b6; }
-.admin-badge--source- { background: #e5e7eb; color: #374151; }
+.admin-badge--source-facebook { background: rgba(219, 234, 254, 0.6); color: #1e40af; border-color: #bfdbfe; }
+.admin-badge--source-website { background: rgba(209, 250, 229, 0.6); color: #065f46; border-color: #a7f3d0; }
+.admin-badge--source-walk-in { background: rgba(255, 237, 213, 0.6); color: #c2410c; border-color: #fed7aa; }
+.admin-badge--source-referral { background: rgba(237, 233, 254, 0.6); color: #5b21b6; border-color: #ddd6fe; }
+.admin-badge--source- { background: rgba(229, 231, 235, 0.6); color: #374151; border-color: #d1d5db; }
 
-.admin-badge--converted { background: #bbf7d0; color: #14532d; }
-.admin-badge--qualified { background: #dbeafe; color: #1e40af; }
+.admin-badge--converted { background: rgba(187, 247, 208, 0.6); color: #14532d; border-color: #86efac; }
+.admin-badge--qualified { background: rgba(219, 234, 254, 0.6); color: #1e40af; border-color: #bfdbfe; }
+
+/* Dark Mode Source Badges */
+[data-theme="dark"] .admin-badge--source-facebook { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3); }
+[data-theme="dark"] .admin-badge--source-website { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
+[data-theme="dark"] .admin-badge--source-walk-in { background: rgba(249, 115, 22, 0.15); color: #fdba74; border-color: rgba(249, 115, 22, 0.3); }
+[data-theme="dark"] .admin-badge--source-referral { background: rgba(139, 92, 246, 0.15); color: #c4b5fd; border-color: rgba(139, 92, 246, 0.3); }
+[data-theme="dark"] .admin-badge--source- { background: rgba(255, 255, 255, 0.05); color: #ccc; border-color: rgba(255, 255, 255, 0.1); }
+[data-theme="dark"] .admin-badge--converted { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
+[data-theme="dark"] .admin-badge--qualified { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3); }
 
 .inquiries-table .col-actions { white-space: nowrap; }
 .col-actions { width: 1%; }

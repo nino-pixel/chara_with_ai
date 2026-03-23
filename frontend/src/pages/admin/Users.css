@@ -1,3 +1,4 @@
 .users-table-current { background: var(--color-bg-alt); }
 .users-table-note { font-size: 0.85rem; color: var(--color-text-muted); }
-.admin-badge--role-admin { background: #1e40af; color: #fff; }
+.admin-badge--role-admin { background: rgba(30, 64, 175, 0.15); color: #1e40af; border-color: #bfdbfe; }
+[data-theme="dark"] .admin-badge--role-admin { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3); }

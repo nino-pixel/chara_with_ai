@@ -4,6 +4,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { HiOutlineChevronLeft, HiOutlineMenu, HiMoon, HiSun } from 'react-icons/hi'
 import { useAdminAuth } from '../../context/AdminAuth'
 import { useDarkMode } from '../../hooks/useDarkMode'
+import Swal from 'sweetalert2'
 import PageTransition from '../../components/PageTransition'
 import { useScrollTopOnRouteChange } from '../../hooks/useScrollTopOnRouteChange'
 import faviconLogo from '../../assets/favicon.png'
@@ -22,7 +23,21 @@ export default function AdminLayout() {
   const didDragRef = useRef(false)
 
   const handleLogout = () => {
-    void logout().then(() => navigate('/admin/login'))
+    Swal.fire({
+      title: 'Logout?',
+      text: 'Are you sure you want to end your session?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, logout',
+      cancelButtonText: 'Stay logged in',
+      confirmButtonColor: 'var(--color-accent)',
+      background: 'var(--color-surface)',
+      color: 'var(--color-text)',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        void logout().then(() => navigate('/admin/login'))
+      }
+    })
   }
 
   const handleExpandClick = () => {

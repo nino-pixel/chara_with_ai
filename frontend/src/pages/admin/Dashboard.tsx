@@ -529,7 +529,7 @@ export default function AdminDashboard() {
                     return (
                       <tr
                         key={row.id}
-                        className="dashboard-leads-attention-row"
+                        className={`dashboard-leads-attention-row ${kind ? `admin-inquiry-row--followup-${kind}` : ''}`}
                         onClick={() => handleAttentionLeadClick(row.id)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
