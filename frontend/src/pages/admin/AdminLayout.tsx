@@ -1,0 +1,131 @@
+import { AnimatePresence } from 'framer-motion'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { HiOutlineChevronLeft, HiOutlineMenu } from 'react-icons/hi'
+import { useAdminAuth } from '../../context/AdminAuth'
+import PageTransition from '../../components/PageTransition'
+import { useScrollTopOnRouteChange } from '../../hooks/useScrollTopOnRouteChange'
+import faviconLogo from '../../assets/favicon.png'
+import './AdminLayout.css'
+
+export default function AdminLayout() {
+  const location = useLocation()
+  const { user, logout } = useAdminAuth()
+  const navigate = useNavigate()
+  useScrollTopOnRouteChange()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [expandButtonTop, setExpandButtonTop] = useState(50)
+  const [isDraggingExpand, setIsDraggingExpand] = useState(false)
+  const dragRef = useRef({ isDragging: false, startY: 0, startTop: 0 })
+  const didDragRef = useRef(false)
+
+  const handleLogout = () => {
+    void logout().then(() => navigate('/admin/login'))
+  }
+
+  const handleExpandClick = () => {
+    if (didDragRef.current) return
+    setSidebarCollapsed(false)
+  }
+
+  const handleExpandMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return
+    dragRef.current = { isDragging: true, startY: e.clientY, startTop: expandButtonTop }
+    didDragRef.current = false
+    setIsDraggingExpand(true)
+  }, [expandButtonTop])
+
+  const handleExpandMouseMove = useCallback((e: MouseEvent) => {
+    if (!dragRef.current.isDragging) return
+    didDragRef.current = true
+    const deltaY = e.clientY - dragRef.current.startY
+    const percentPerPixel = 100 / window.innerHeight
+    let newTop = dragRef.current.startTop + deltaY * percentPerPixel
+    newTop = Math.max(5, Math.min(95, newTop))
+    setExpandButtonTop(newTop)
+    dragRef.current.startY = e.clientY
+    dragRef.current.startTop = newTop
+  }, [])
+
+  const handleExpandMouseUp = useCallback(() => {
+    dragRef.current.isDragging = false
+    setIsDraggingExpand(false)
+    setTimeout(() => { didDragRef.current = false }, 0)
+  }, [])
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => handleExpandMouseMove(e)
+    const onUp = () => handleExpandMouseUp()
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+  }, [handleExpandMouseMove, handleExpandMouseUp])
+
+  return (
+    <div className={`admin-layout ${sidebarCollapsed ? 'admin-layout--sidebar-collapsed' : ''}`}>
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-brand">
+          <div className="admin-sidebar-brand-row">
+            <Link to="/admin/dashboard" className="admin-sidebar-brand-text">
+              <img
+                src={faviconLogo}
+                alt=""
+                className="admin-sidebar-brand-icon"
+                width={44}
+                height={44}
+                decoding="async"
+              />
+              <span>CHara Realty</span>
+            </Link>
+            <button
+              type="button"
+              className="admin-sidebar-toggle"
+              onClick={() => setSidebarCollapsed(true)}
+              aria-label="Hide sidebar"
+            >
+              <HiOutlineChevronLeft />
+            </button>
+          </div>
+          <span className="admin-sidebar-role">{user ? 'Admin' : 'Guest'}</span>
+        </div>
+        <nav className="admin-sidebar-nav">
+          <Link to="/admin/dashboard">Dashboard</Link>
+          <Link to="/admin/clients">Clients</Link>
+          <Link to="/admin/properties">Properties</Link>
+          <Link to="/admin/deals">Deals</Link>
+          <Link to="/admin/inquiries">Leads & Inquiries</Link>
+          <Link to="/admin/activity">Activity Log</Link>
+          <Link to="/admin/reports">Reports</Link>
+          <Link to="/admin/users">Admin users</Link>
+        </nav>
+        <div className="admin-sidebar-footer">
+          <span className="admin-sidebar-user">{user?.name ?? '—'}</span>
+          <button type="button" className="admin-logout-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </aside>
+      <button
+        type="button"
+        className={`admin-sidebar-expand ${isDraggingExpand ? 'admin-sidebar-expand--dragging' : ''}`}
+        onClick={handleExpandClick}
+        onMouseDown={handleExpandMouseDown}
+        style={{ top: `${expandButtonTop}%` }}
+        aria-label="Show sidebar"
+        aria-hidden={!sidebarCollapsed}
+      >
+        <HiOutlineMenu />
+      </button>
+      <main className="admin-main">
+        <AnimatePresence mode="wait">
+          <PageTransition key={location.pathname}>
+            <Outlet />
+          </PageTransition>
+        </AnimatePresence>
+      </main>
+    </div>
+  )
+}

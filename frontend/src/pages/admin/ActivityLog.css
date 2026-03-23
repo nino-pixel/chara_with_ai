@@ -1,0 +1,38 @@
+.activity-log-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.activity-log-table .col-when { white-space: nowrap; width: 1%; }
+.activity-log-table .col-actor { min-width: 100px; }
+.activity-log-table .col-action { min-width: 100px; }
+.activity-log-table .col-entity-type { min-width: 90px; }
+.activity-log-table .col-entity { min-width: 160px; }
+.activity-log-table .col-details { min-width: 180px; max-width: 320px; }
+
+.activity-log-action {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.activity-log-action--created { background: #d1fae5; color: #065f46; }
+.activity-log-action--updated { background: #dbeafe; color: #1e40af; }
+.activity-log-action--archived { background: #fef3c7; color: #92400e; }
+.activity-log-action--restored { background: #d1fae5; color: #065f46; }
+.activity-log-action--deleted { background: #fee2e2; color: #b91c1c; }
+.activity-log-action--status_changed { background: #e0e7ff; color: #3730a3; }
+.activity-log-action--assigned { background: #f3e8ff; color: #6b21a8; }
+.activity-log-action--login { background: #e5e7eb; color: #374151; }
+.activity-log-action--other { background: #f3f4f6; color: #6b7280; }
+
+.activity-log-entity-link {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.activity-log-entity-link:hover { text-decoration: underline; }
+
+.admin-empty-cell { text-align: center; padding: 2rem; color: var(--color-text-muted); }

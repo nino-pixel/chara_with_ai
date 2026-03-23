@@ -1,0 +1,23 @@
+.contact-page .contact-hero { }
+.contact-content { padding: 2rem 0 3rem; }
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+.contact-info .section-title { font-size: 1.1rem; margin-bottom: 0.35rem; }
+.contact-text { margin: 0 0 1.25rem; color: var(--color-text-muted); }
+.contact-text a { color: var(--color-accent); }
+.contact-map .section-title { margin-bottom: 0.75rem; }
+.map-wrap {
+  background: var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  min-height: 280px;
+}
+.map-wrap iframe { display: block; }
+@media (max-width: 768px) {
+  .contact-grid { grid-template-columns: 1fr; }
+}

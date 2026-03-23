@@ -1,0 +1,327 @@
+/* Toolbar: one global search + Add Lead */
+.admin-inquiries .admin-toolbar {
+  align-items: center;
+}
+.admin-inquiries-search {
+  flex: 1 1 240px;
+  min-width: min(100%, 260px);
+  max-width: 36rem;
+}
+
+.inquiries-table thead th.th-plain {
+  vertical-align: bottom;
+}
+
+.admin-inquiry-message {
+  max-width: 220px;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-payment-est,
+.admin-inquiry-payment-est {
+  max-width: 140px;
+  vertical-align: top;
+}
+
+.admin-inquiry-payment-est-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.admin-inquiry-payment-est-monthly {
+  font-weight: 700;
+  color: var(--color-accent);
+  font-size: 0.88rem;
+}
+
+.admin-inquiry-payment-est-line {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.admin-inquiry-payment-est-empty {
+  color: var(--color-text-muted);
+}
+
+.col-qualify,
+.admin-inquiry-qualify {
+  max-width: 118px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--color-text);
+  vertical-align: top;
+}
+
+.admin-inquiry-source { white-space: nowrap; }
+.admin-inquiry-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-inquiry-name-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/** Maliit na pulang bilog — high buying customer (may legend sa taas ng table) */
+.admin-inquiry-intent-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #dc2626;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.admin-inquiry-intent-dot--legend {
+  width: 12px;
+  height: 12px;
+}
+
+.admin-inquiries-legends {
+  margin: 0 0 0.75rem;
+  max-width: 48rem;
+}
+
+.admin-inquiries-legends--row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  max-width: none;
+}
+
+.admin-inquiries-legend-caption {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.col-inquiry-date,
+.admin-inquiry-date-cell {
+  white-space: nowrap;
+  font-size: 0.88rem;
+  vertical-align: middle;
+}
+
+/* Follow-up = full row tint (open leads with nextFollowUpAt) */
+.inquiries-table tbody tr.admin-inquiry-row--followup-overdue td {
+  background: #fef2f2;
+}
+.inquiries-table tbody tr.admin-inquiry-row--followup-overdue:hover td {
+  background: #fee2e2;
+}
+.inquiries-table tbody tr.admin-inquiry-row--followup-today td {
+  background: #fff7ed;
+}
+.inquiries-table tbody tr.admin-inquiry-row--followup-today:hover td {
+  background: #ffedd5;
+}
+.inquiries-table tbody tr.admin-inquiry-row--followup-upcoming td {
+  background: #f9fafb;
+}
+.inquiries-table tbody tr.admin-inquiry-row--followup-upcoming:hover td {
+  background: #f3f4f6;
+}
+
+.admin-inquiries-legend--followup-rows {
+  max-width: none;
+}
+.admin-inquiries-legend-text--compact {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.25rem;
+}
+.admin-inquiries-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+.admin-inquiries-legend-swatch {
+  display: inline-block;
+  width: 1.25rem;
+  height: 0.65rem;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 0.15rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.admin-inquiries-legend-swatch--overdue {
+  background: #fef2f2;
+  box-shadow: inset 0 0 0 1px #fecaca;
+}
+.admin-inquiries-legend-swatch--today {
+  background: #fff7ed;
+  box-shadow: inset 0 0 0 1px #fed7aa;
+}
+.admin-inquiries-legend-swatch--upcoming {
+  background: #f9fafb;
+  box-shadow: inset 0 0 0 1px #e5e7eb;
+}
+
+.col-actions--inquiry {
+  white-space: nowrap;
+  min-width: 10.5rem;
+}
+
+.btn-icon-btn--contacted:hover:not(:disabled) {
+  color: #047857;
+  background: #d1fae5;
+}
+
+@keyframes admin-inquiry-row-flash {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  15%,
+  50% {
+    box-shadow: inset 0 0 0 2px var(--color-accent, #c17f59);
+    background: rgba(193, 127, 89, 0.08);
+  }
+}
+
+tr.admin-inquiry-row--flash {
+  animation: admin-inquiry-row-flash 2s ease-in-out;
+}
+
+.admin-inquiries-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  background: var(--color-bg-alt, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius, 8px);
+}
+
+.admin-inquiries-legend-text strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* Scrollable table and sticky header — same behavior as Deals/Clients */
+.admin-inquiries-table-wrap {
+  overflow: auto;
+  height: 520px;
+  min-height: 320px;
+  max-height: min(520px, calc(100vh - 220px));
+}
+.admin-inquiries-table-wrap .admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-bg-alt) !important;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 0 var(--color-border);
+}
+
+.admin-inquiry-status-select {
+  min-width: 132px;
+  width: 132px;
+  display: block;
+  margin-top: 0;
+  font-weight: 600;
+}
+.admin-inquiry-status-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.admin-inquiry-status-select--new {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.admin-inquiry-status-select--contacted {
+  background: #fef3c7;
+  color: #92400e;
+}
+.admin-inquiry-status-select--qualified {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.admin-inquiry-status-select--converted {
+  background: #bbf7d0;
+  color: #14532d;
+}
+.admin-inquiry-status-select--lost {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.admin-inquiry-assigned-select {
+  min-width: 180px;
+  width: 180px;
+}
+.admin-inquiry-assigned-control {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.admin-text-muted {
+  color: var(--color-text-muted);
+}
+
+.admin-badge--source-facebook { background: #dbeafe; color: #1e40af; }
+.admin-badge--source-website { background: #d1fae5; color: #065f46; }
+.admin-badge--source-walk-in { background: #ffedd5; color: #c2410c; }
+.admin-badge--source-referral { background: #ede9fe; color: #5b21b6; }
+.admin-badge--source- { background: #e5e7eb; color: #374151; }
+
+.admin-badge--converted { background: #bbf7d0; color: #14532d; }
+.admin-badge--qualified { background: #dbeafe; color: #1e40af; }
+
+.inquiries-table .col-actions { white-space: nowrap; }
+.col-actions { width: 1%; }
+.inquiries-table .col-actions .btn + .btn { margin-left: 0.4rem; }
+.th-sort-btn {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  font: inherit;
+}
+.th-sort-icon {
+  display: inline-flex;
+  align-items: center;
+}
+.btn-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-icon-btn:hover { background: var(--color-border); color: var(--color-accent); }
+.btn-icon-btn--danger:hover { background: #fee2e2; color: #b91c1c; }
+.btn-icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-icon-btn svg { width: 1.1rem; height: 1.1rem; }
+.btn-icon-btn + .btn-icon-btn { margin-left: 0.25rem; }

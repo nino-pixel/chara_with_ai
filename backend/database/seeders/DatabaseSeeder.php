@@ -1,0 +1,28 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    use WithoutModelEvents;
+
+    /**
+     * Seed the application's database.
+     */
+    public function run(): void
+    {
+        // Primary admin (password hashed via User model `password` cast).
+        // Change password in production; do not commit real secrets.
+        User::updateOrCreate(
+            ['email' => 'antoninobalinado756@gmail.com'],
+            [
+                'name' => 'Antonino Balinado Jr.',
+                'password' => 'password123',
+            ]
+        );
+    }
+}

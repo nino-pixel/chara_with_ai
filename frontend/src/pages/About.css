@@ -1,0 +1,252 @@
+/* About: larger type + spacing so the page feels full and readable on wide screens */
+
+.about-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.about-page .page-hero {
+  padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(2rem, 4vw, 3rem);
+}
+
+.about-page .page-hero .page-title {
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+}
+
+.about-page .page-hero .page-subtitle {
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  line-height: 1.55;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0.95;
+}
+
+.about-hero-lead {
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.55;
+}
+
+.about-content {
+  flex: 1;
+  padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(2.5rem, 5vw, 4rem);
+}
+
+.about-inner {
+  max-width: min(56rem, 94vw);
+  margin: 0 auto;
+}
+
+.about-block {
+  margin-bottom: clamp(2.5rem, 4vw, 3.5rem);
+}
+
+.about-block:last-of-type {
+  margin-bottom: 0;
+}
+
+.about-block .section-title {
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+.about-block p {
+  margin: 0;
+  font-size: clamp(1.08rem, 1.6vw, 1.22rem);
+  line-height: 1.8;
+  color: var(--color-text-muted);
+}
+
+.about-block strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.about-block em {
+  font-style: italic;
+}
+
+/* Why choose us */
+.about-block--why .section-title {
+  margin-bottom: clamp(1.1rem, 2vw, 1.5rem);
+}
+
+.about-why-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.35rem);
+}
+
+@media (min-width: 640px) {
+  .about-why-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1100px) {
+  .about-why-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+.about-why-card {
+  margin: 0;
+  padding: clamp(1.25rem, 2.5vw, 1.65rem);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.about-why-title {
+  font-size: clamp(1.08rem, 1.6vw, 1.2rem);
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.about-why-card p {
+  font-size: clamp(1rem, 1.35vw, 1.1rem);
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* How we work */
+.about-block--how .section-title {
+  margin-bottom: clamp(1.1rem, 2vw, 1.5rem);
+}
+
+.about-how-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.35rem);
+}
+
+.about-how-step {
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.35rem);
+  align-items: flex-start;
+  padding: clamp(1.15rem, 2.5vw, 1.5rem);
+  background: var(--color-bg-alt);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}
+
+.about-how-num {
+  flex-shrink: 0;
+  width: clamp(2.5rem, 4vw, 3rem);
+  height: clamp(2.5rem, 4vw, 3rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.1rem, 1.8vw, 1.25rem);
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-accent);
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.about-how-title {
+  font-size: clamp(1.08rem, 1.6vw, 1.2rem);
+  font-weight: 700;
+  margin: 0 0 0.45rem;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.about-how-step p {
+  font-size: clamp(1rem, 1.35vw, 1.1rem);
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* Our approach */
+.about-block--approach {
+  padding-top: 0.35rem;
+}
+
+/* CTA */
+.about-cta {
+  padding: clamp(2.75rem, 6vw, 4.5rem) 0 clamp(3rem, 7vw, 5rem);
+  background: linear-gradient(180deg, var(--color-bg-alt) 0%, var(--color-bg) 100%);
+  border-top: 1px solid var(--color-border);
+}
+
+.about-cta-inner {
+  max-width: min(40rem, 92vw);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.about-cta-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+.about-cta-text {
+  margin: 0 0 1.5rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.15rem);
+  line-height: 1.7;
+  color: var(--color-text-muted);
+}
+
+.about-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-cta .btn-lg {
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  padding: 0.75rem 1.5rem;
+}
+
+.about-cta-btn-secondary {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-surface);
+}
+
+.about-cta-btn-secondary:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  text-decoration: none;
+}
+
+@media (max-width: 480px) {
+  .about-cta-actions {
+    flex-direction: column;
+  }
+
+  .about-cta-actions .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}

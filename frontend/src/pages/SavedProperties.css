@@ -1,0 +1,44 @@
+.saved-properties-page {
+  padding-top: 1rem;
+}
+
+.saved-properties-header {
+  margin-bottom: 2rem;
+}
+
+.saved-properties-subtitle {
+  max-width: 36rem;
+}
+
+.saved-properties-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+}
+
+.saved-properties-empty-text {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+}
+
+.saved-properties-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.saved-properties-grid > li {
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .saved-properties-grid {
+    grid-template-columns: 1fr;
+  }
+}

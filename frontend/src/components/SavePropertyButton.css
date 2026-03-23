@@ -1,0 +1,117 @@
+.save-property-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text-muted);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.save-property-btn:hover {
+  color: var(--color-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.save-property-btn:active {
+  transform: scale(0.92);
+}
+
+.save-property-btn--saved {
+  color: #e11d48;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.save-property-btn--saved:hover {
+  color: #be123c;
+}
+
+.save-property-card-slot {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  pointer-events: none;
+}
+
+.save-property-card-slot .save-property-btn {
+  pointer-events: auto;
+}
+
+.save-property-btn--card {
+  position: static;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.save-property-saved-toast {
+  pointer-events: none;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.88);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: save-property-toast-in 0.25s ease;
+}
+
+@keyframes save-property-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.save-property-btn--card .save-property-btn-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.save-property-btn--detail {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-border);
+}
+
+.save-property-btn--detail .save-property-btn-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.save-property-btn--detail.save-property-btn--saved {
+  border-color: rgba(225, 29, 72, 0.35);
+}
+
+@keyframes save-property-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.save-property-btn.save-property-btn--just-toggled {
+  animation: save-property-pop 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}

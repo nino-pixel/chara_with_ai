@@ -1,0 +1,603 @@
+import { useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  HiOutlineHome,
+  HiOutlineUser,
+  HiOutlineChat,
+  HiOutlineCurrencyDollar,
+  HiOutlineStar,
+  HiOutlineRefresh,
+} from 'react-icons/hi'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts'
+import type { InquiryStatus } from '../../data/mockAdmin'
+import { fetchClients } from '../../services/clientsService'
+import { fetchInquiries } from '../../services/inquiriesService'
+import { followUpTagLabel, getFollowUpUiKind, getLeadsNeedingAttention } from '../../utils/inquiryFollowUp'
+import { fetchProperties, PROPERTY_STATUS_LABELS, type PropertyStatus } from '../../services/propertiesService'
+import { fetchDeals } from '../../services/dealsService'
+import { getActivityStore, type ActivityLogEntry } from '../../data/activityLog'
+import './admin-common.css'
+import './Dashboard.css'
+
+type ActivityTypeKey =
+  | 'property_added'
+  | 'lead_created'
+  | 'inquiry_received'
+  | 'deal_closed'
+  | 'property_saved'
+  | 'property_status_changed'
+
+const ACTIVITY_ICONS: Record<ActivityTypeKey, React.ComponentType<{ className?: string }>> = {
+  property_added: HiOutlineHome,
+  lead_created: HiOutlineUser,
+  inquiry_received: HiOutlineChat,
+  deal_closed: HiOutlineCurrencyDollar,
+  property_saved: HiOutlineStar,
+  property_status_changed: HiOutlineRefresh,
+}
+
+/* Property status colors — match admin badges / PropertyCard */
+const PIE_COLORS = [
+  '#059669', /* available (green) */
+  '#3b82f6', /* reserved */
+  '#ea580c', /* under_negotiation */
+  '#4f46e5', /* processing_docs */
+  '#6b7280', /* sold */
+  '#9ca3af', /* draft */
+  '#b91c1c', /* cancelled */
+]
+
+function formatPeso(n: number) {
+  return '₱' + (n / 1_000_000).toFixed(2) + 'M'
+}
+
+function parsePesoToNumber(s: string | null | undefined): number {
+  if (!s) return 0
+  const cleaned = String(s).replace(/[₱,\s]/g, '')
+  const n = Number(cleaned)
+  return Number.isNaN(n) ? 0 : n
+}
+
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function mapActivityType(entry: ActivityLogEntry): ActivityTypeKey {
+  if (entry.entityType === 'property' && entry.action === 'created') return 'property_added'
+  if (entry.entityType === 'property' && entry.action === 'status_changed') return 'property_status_changed'
+  if (entry.entityType === 'property' && entry.action === 'updated') return 'property_saved'
+  if (entry.entityType === 'client' && (entry.action === 'created' || entry.action === 'updated')) return 'lead_created'
+  if (entry.action === 'other') return 'inquiry_received'
+  return 'inquiry_received'
+}
+
+const INQUIRY_STATUS_LABELS_DASH: Record<InquiryStatus, string> = {
+  new: 'Pending',
+  contacted: 'Contacted',
+  qualified: 'Qualified',
+  converted: 'Converted',
+  lost: 'Lost',
+}
+
+const PROPERTY_STATUS_ORDER: PropertyStatus[] = [
+  'available',
+  'reserved',
+  'under_negotiation',
+  'processing_docs',
+  'sold',
+  'draft',
+  'cancelled',
+]
+
+export default function AdminDashboard() {
+  const navigate = useNavigate()
+
+  const clients = fetchClients()
+  const inquiries = fetchInquiries()
+  const leadsNeedingAttention = useMemo(() => getLeadsNeedingAttention(inquiries, 5), [inquiries])
+  const properties = fetchProperties()
+  const deals = fetchDeals()
+  const activities = getActivityStore()
+
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth()
+
+  const activeListings = properties.filter((p) => p.status !== 'archived' && !p.archived).length
+  const totalClients = clients.filter((c) => !c.archived).length
+
+  const newLeadsThisMonth = inquiries.filter((lead) => {
+    if (!lead.createdAt) return false
+    const d = new Date(lead.createdAt)
+    return d.getFullYear() === currentYear && d.getMonth() === currentMonth
+  }).length
+
+  const pendingInquiries = inquiries.filter((i) =>
+    ['new', 'contacted', 'qualified'].includes(i.status)
+  ).length
+
+  const monthlySalesData = MONTH_LABELS.map((label, monthIndex) => {
+    const total = deals.reduce((sum, deal) => {
+      if (deal.status !== 'Closed') return sum
+      const dateStr = deal.closingDate || deal.date
+      if (!dateStr) return sum
+      const d = new Date(dateStr)
+      if (d.getFullYear() !== currentYear || d.getMonth() !== monthIndex) return sum
+      return sum + parsePesoToNumber(deal.price)
+    }, 0)
+    return { month: label, total }
+  })
+
+  const monthlySales = monthlySalesData[currentMonth]?.total ?? 0
+  const closedDeals = deals.filter((d) => d.status === 'Closed').length
+  const totalClosedSales = deals.reduce((sum, deal) => {
+    if (deal.status !== 'Closed') return sum
+    return sum + parsePesoToNumber(deal.price)
+  }, 0)
+  const averageDealValue = closedDeals === 0 ? null : totalClosedSales / closedDeals
+  const averageDealValueText = averageDealValue == null ? '—' : formatPeso(averageDealValue)
+  const totalLeads = totalClients
+  const conversionRatePercent = totalLeads === 0 ? 0 : (closedDeals / totalLeads) * 100
+  const conversionRateText = conversionRatePercent.toFixed(1) + '%'
+
+  const clientSourceData = Object.values(
+    clients.reduce<Record<string, { source: string; count: number }>>((acc, c) => {
+      const key = c.source || 'Other'
+      if (!acc[key]) acc[key] = { source: key, count: 0 }
+      acc[key].count += 1
+      return acc
+    }, {})
+  )
+
+  const propertyStatusData = PROPERTY_STATUS_ORDER.map((statusKey) => {
+    const count = properties.filter((p) => {
+      const normalizedStatus: PropertyStatus = p.archived ? 'archived' : p.status
+      return normalizedStatus === statusKey
+    }).length
+    return {
+      name: PROPERTY_STATUS_LABELS[statusKey],
+      value: count,
+      statusKey,
+    }
+  })
+
+  const inquiriesPerMonth = MONTH_LABELS.map((label, monthIndex) => {
+    const count = inquiries.reduce((sum, lead) => {
+      if (!lead.createdAt) return sum
+      const d = new Date(lead.createdAt)
+      if (d.getFullYear() !== currentYear || d.getMonth() !== monthIndex) return sum
+      return sum + 1
+    }, 0)
+    return { month: label, count }
+  })
+
+  const recentActivityRows = activities.slice(0, 5)
+
+  const summary = {
+    totalClients,
+    activeListings,
+    newLeadsThisMonth,
+    pendingInquiries,
+    monthlySales,
+    closedDeals,
+    conversionRateText,
+    averageDealValueText,
+  }
+
+  const dealsPipelineCounts = deals.reduce(
+    (acc, deal) => {
+      switch (deal.status) {
+        case 'Inquiry':
+          acc.inquiry += 1
+          break
+        case 'Negotiation':
+          acc.negotiating += 1
+          break
+        case 'Reserved':
+          acc.reserved += 1
+          break
+        case 'Processing Documents':
+          acc.processing += 1
+          break
+        case 'Closed':
+          acc.closed += 1
+          break
+        case 'Cancelled':
+          acc.cancelled += 1
+          break
+        default:
+          break
+      }
+      return acc
+    },
+    { inquiry: 0, negotiating: 0, reserved: 0, processing: 0, closed: 0, cancelled: 0 }
+  )
+
+  const dealsPipelineData = [
+    {
+      stage: 'Pipeline',
+      inquiry: dealsPipelineCounts.inquiry,
+      negotiating: dealsPipelineCounts.negotiating,
+      reserved: dealsPipelineCounts.reserved,
+      processing: dealsPipelineCounts.processing,
+      closed: dealsPipelineCounts.closed,
+      cancelled: dealsPipelineCounts.cancelled,
+    },
+  ]
+
+  const dealsPipelineHasData = Object.values(dealsPipelineCounts).some((v) => v > 0)
+  const monthlySalesHasData = monthlySalesData.some((row) => row.total > 0)
+  const leadsPerMonthHasData = inquiriesPerMonth.some((row) => row.count > 0)
+  const clientSourceHasData = clientSourceData.some((row) => row.count > 0)
+  const propertyStatusHasData = propertyStatusData.some((row) => row.value > 0)
+
+  const handlePropertyStatusClick = (data: { statusKey?: string }) => {
+    if (data?.statusKey) navigate(`/admin/properties?status=${data.statusKey}`)
+  }
+
+  const handleDealsPipelineClick = (
+    dataKey: 'inquiry' | 'negotiating' | 'reserved' | 'processing' | 'closed' | 'cancelled'
+  ) => {
+    const status =
+      dataKey === 'inquiry'
+        ? 'Inquiry'
+        : dataKey === 'reserved'
+        ? 'Reserved'
+        : dataKey === 'negotiating'
+        ? 'Negotiation'
+        : dataKey === 'processing'
+        ? 'Processing Documents'
+        : dataKey === 'cancelled'
+        ? 'Cancelled'
+        : 'Closed'
+    const encoded = encodeURIComponent(status)
+    navigate(`/admin/deals?status=${encoded}`)
+  }
+
+  const handleAttentionLeadClick = (id: string) => {
+    navigate(`/admin/inquiries?focus=${encodeURIComponent(id)}`)
+  }
+
+  const handleActivityRowClick = (row: ActivityLogEntry) => {
+    if (!row.entityId) return
+    const id = encodeURIComponent(row.entityId)
+    if (row.entityType === 'deal') {
+      navigate(`/admin/deals?dealId=${id}`)
+    } else if (row.entityType === 'property') {
+      navigate(`/admin/properties?propertyId=${id}`)
+    } else if (row.entityType === 'client') {
+      navigate(`/admin/clients?clientId=${id}`)
+    }
+  }
+  return (
+    <div className="admin-dashboard">
+      <h1 className="admin-page-title">Dashboard</h1>
+
+      {/* 1. Summary cards — max 7 */}
+      <section className="dashboard-section dashboard-cards">
+        <Link to="/admin/clients" className="admin-stat-card dashboard-card dashboard-card--blue">
+          <span className="admin-stat-value">{summary.totalClients}</span>
+          <span className="admin-stat-label">Total Clients</span>
+        </Link>
+        <Link
+          to="/admin/properties?status=available"
+          className="admin-stat-card dashboard-card dashboard-card--green"
+        >
+          <span className="admin-stat-value">{summary.activeListings}</span>
+          <span className="admin-stat-label">Active Listings</span>
+        </Link>
+        <Link to="/admin/inquiries" className="admin-stat-card dashboard-card dashboard-card--teal">
+          <span className="admin-stat-value">{summary.newLeadsThisMonth}</span>
+          <span className="admin-stat-label">New Leads (This Month)</span>
+        </Link>
+        <Link to="/admin/inquiries" className="admin-stat-card dashboard-card dashboard-card--red">
+          <span className="admin-stat-value">{summary.pendingInquiries}</span>
+          <span className="admin-stat-label">Pending Inquiries</span>
+        </Link>
+        <Link
+          to="/admin/deals?status=Closed"
+          className="admin-stat-card dashboard-card dashboard-card--yellow"
+        >
+          <span className="admin-stat-value">{formatPeso(summary.monthlySales)}</span>
+          <span className="admin-stat-label">Monthly Sales</span>
+        </Link>
+        <Link
+          to="/admin/deals?status=Closed"
+          className="admin-stat-card dashboard-card dashboard-card--purple"
+        >
+          <span className="admin-stat-value">{summary.closedDeals}</span>
+          <span className="admin-stat-label">Closed Deals</span>
+        </Link>
+        <Link to="/admin/deals" className="admin-stat-card dashboard-card dashboard-card--blue">
+          <span className="admin-stat-value">{summary.conversionRateText}</span>
+          <span className="admin-stat-label">Deal Conversion Rate</span>
+        </Link>
+        <Link to="/admin/deals?status=Closed" className="admin-stat-card dashboard-card dashboard-card--teal">
+          <span className="admin-stat-value">{summary.averageDealValueText}</span>
+          <span className="admin-stat-label">Average Deal Value</span>
+        </Link>
+      </section>
+
+      {/* Deals pipeline + Leads per month — side by side */}
+      <section className="dashboard-section dashboard-charts-row dashboard-charts-row--pipeline-leads">
+        <div className="dashboard-chart-block dashboard-chart-block--half">
+          <h2 className="dashboard-chart-title">Deals Pipeline</h2>
+          <div className="dashboard-chart-wrap dashboard-chart-wrap--bar-inline dashboard-chart-wrap--pipeline">
+            {dealsPipelineHasData ? (
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart
+                  data={dealsPipelineData}
+                  layout="vertical"
+                  margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                  <XAxis type="number" tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                  <YAxis
+                    type="category"
+                    dataKey="stage"
+                    width={72}
+                    tick={{ fontSize: 11 }}
+                    stroke="var(--color-text-muted)"
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Bar
+                    dataKey="inquiry"
+                    stackId="pipeline"
+                    fill="#3b82f6"
+                    name="Inquiry"
+                    onClick={() => handleDealsPipelineClick('inquiry')}
+                  />
+                  <Bar
+                    dataKey="negotiating"
+                    stackId="pipeline"
+                    fill="#f97316"
+                    name="Negotiation"
+                    onClick={() => handleDealsPipelineClick('negotiating')}
+                  />
+                  <Bar
+                    dataKey="reserved"
+                    stackId="pipeline"
+                    fill="#8b5cf6"
+                    name="Reserved"
+                    onClick={() => handleDealsPipelineClick('reserved')}
+                  />
+                  <Bar
+                    dataKey="processing"
+                    stackId="pipeline"
+                    fill="#6366f1"
+                    name="Processing Documents"
+                    onClick={() => handleDealsPipelineClick('processing')}
+                  />
+                  <Bar
+                    dataKey="closed"
+                    stackId="pipeline"
+                    fill="#16a34a"
+                    name="Closed"
+                    onClick={() => handleDealsPipelineClick('closed')}
+                  />
+                  <Bar
+                    dataKey="cancelled"
+                    stackId="pipeline"
+                    fill="#ef4444"
+                    name="Cancelled"
+                    onClick={() => handleDealsPipelineClick('cancelled')}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                No data available
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="dashboard-chart-block dashboard-chart-block--half">
+          <h2 className="dashboard-chart-title">Leads Created per Month</h2>
+          <div className="dashboard-chart-wrap dashboard-chart-wrap--bar-inline dashboard-chart-wrap--leads-month">
+            {leadsPerMonthHasData ? (
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={inquiriesPerMonth} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#4a6b7a" radius={[4, 4, 0, 0]} name="Leads" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                No data available
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Line chart — Sales trend (deal amount per month, Jan–Dec) */}
+      <section className="dashboard-section dashboard-chart-block">
+        <h2 className="dashboard-chart-title">Monthly Sales (Deal Amount)</h2>
+        <div className="dashboard-chart-wrap dashboard-chart-wrap--line">
+          {monthlySalesHasData ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={monthlySalesData} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-text-muted)" />
+                <YAxis tickFormatter={(v) => formatPeso(v)} tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                <Tooltip
+                  formatter={(v: number | undefined) => [v != null ? formatPeso(v) : '—', 'Sales']}
+                  labelFormatter={(l) => `Month: ${l}`}
+                />
+                <Line type="monotone" dataKey="total" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 4 }} name="Sales" />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div style={{ minHeight: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              No data available
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 3. Bar (source) + Pie (status) */}
+      <section className="dashboard-section dashboard-charts-row">
+        <div className="dashboard-chart-block dashboard-chart-block--half">
+          <h2 className="dashboard-chart-title">Client Source</h2>
+          <div className="dashboard-chart-wrap dashboard-chart-wrap--bar">
+            {clientSourceHasData ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={clientSourceData} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                  <XAxis type="number" tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                  <YAxis type="category" dataKey="source" width={72} tick={{ fontSize: 11 }} stroke="var(--color-text-muted)" />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} name="Clients" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                No data available
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="dashboard-chart-block dashboard-chart-block--half">
+          <h2 className="dashboard-chart-title">Property Status</h2>
+          <div className="dashboard-chart-wrap dashboard-chart-wrap--pie">
+            {propertyStatusHasData ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie
+                    data={propertyStatusData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={90}
+                    onClick={handlePropertyStatusClick}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {propertyStatusData.map((_, i) => (
+                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v: number | undefined) => [v ?? '—', 'Units']} />
+                  <Legend iconSize={8} iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                No data available
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Leads needing attention + Recent activity — side by side */}
+      <section className="dashboard-section dashboard-leads-activity-row">
+        <div className="dashboard-leads-activity-panel dashboard-leads-attention">
+          <h2 className="dashboard-chart-title">Leads Needing Attention</h2>
+          <div className="admin-table-wrap dashboard-leads-attention-table">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Property</th>
+                  <th>Status</th>
+                  <th>Follow-up</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leadsNeedingAttention.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="dashboard-leads-attention-empty">
+                      No overdue or &ldquo;due today&rdquo; leads — you&apos;re caught up.
+                    </td>
+                  </tr>
+                ) : (
+                  leadsNeedingAttention.map((row) => {
+                    const kind = getFollowUpUiKind(row)
+                    return (
+                      <tr
+                        key={row.id}
+                        className="dashboard-leads-attention-row"
+                        onClick={() => handleAttentionLeadClick(row.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleAttentionLeadClick(row.id)
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <td>{row.name}</td>
+                        <td>{row.propertyTitle}</td>
+                        <td>{INQUIRY_STATUS_LABELS_DASH[row.status]}</td>
+                        <td>
+                          {kind ? (
+                            <span
+                              className={`admin-inquiry-followup-tag admin-inquiry-followup-tag--${kind} dashboard-leads-attention-tag`}
+                            >
+                              {followUpTagLabel(kind)}
+                            </span>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="dashboard-leads-activity-panel">
+          <h2 className="dashboard-chart-title">Recent Activity</h2>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Activity</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentActivityRows.map((row, i) => {
+                  const Icon = ACTIVITY_ICONS[mapActivityType(row)]
+                  const date = row.at.slice(0, 10)
+                  const message = row.details || row.entityLabel || '—'
+                  return (
+                    <tr key={i} onClick={() => handleActivityRowClick(row)}>
+                      <td>
+                        <span className="dashboard-activity-cell">
+                          {Icon && <Icon className="dashboard-activity-icon" aria-hidden />}
+                          <span>{message}</span>
+                        </span>
+                      </td>
+                      <td>{date}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}

@@ -1,0 +1,240 @@
+/* Client Profile — layout and card design */
+
+.client-profile {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.client-profile-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+.client-profile-header .btn {
+  flex-shrink: 0;
+}
+.client-profile-header-right {
+  flex: 1;
+  min-width: 0;
+}
+.client-profile-header .admin-page-title {
+  margin: 0 0 0.2rem;
+  font-size: 1.35rem;
+}
+.client-profile-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* Context strip at top — no scroll needed */
+.client-profile-context {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.client-profile-context-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.client-profile-name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+.client-profile-priority-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 6px;
+}
+.client-profile-context-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+.client-profile-meta-item strong {
+  font-weight: 600;
+  color: var(--color-text);
+  margin-right: 0.25rem;
+}
+.client-profile-meta-empty {
+  font-style: italic;
+}
+
+/* Section cards */
+.profile-section {
+  margin-bottom: 1.5rem;
+}
+.profile-section.profile-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+.profile-section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+.profile-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+.profile-section-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.profile-section-head .profile-section-title {
+  margin-bottom: 0.75rem;
+}
+
+/* Basic Info definition list */
+.profile-dl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  max-width: 520px;
+}
+.profile-dl > div {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 0 1rem;
+  align-items: baseline;
+}
+.profile-dl dt {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+}
+.profile-dl dd {
+  margin: 0;
+  font-size: 1.0625rem;
+  word-break: break-word;
+}
+.profile-dl a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.profile-dl a:hover {
+  text-decoration: underline;
+}
+
+/* Tables inside profile */
+.profile-table-wrap {
+  margin-top: 0;
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.profile-table-wrap .admin-table {
+  font-size: 0.9rem;
+}
+.profile-table-wrap .admin-table th,
+.profile-table-wrap .admin-table td {
+  padding: 0.6rem 1rem;
+}
+.admin-empty-cell {
+  color: var(--color-text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 1.5rem !important;
+}
+
+/* Saved properties list */
+.saved-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.saved-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.saved-list li:last-child {
+  border-bottom: none;
+}
+.saved-list a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.saved-list a:hover {
+  text-decoration: underline;
+}
+
+/* Admin Notes */
+.profile-notes-textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  margin-bottom: 1rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.profile-notes-actions {
+  margin-top: 0.5rem;
+}
+
+/* Not found state */
+.client-profile .admin-empty {
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .client-profile-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .profile-dl > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+  .profile-section.profile-card {
+    padding: 1rem 1.25rem;
+  }
+  .profile-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .profile-table-wrap .admin-table th,
+  .profile-table-wrap .admin-table td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}

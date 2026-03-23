@@ -1,0 +1,290 @@
+.mpc-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.mpc-card-header {
+  margin-bottom: 1rem;
+}
+
+.mpc-title {
+  font-size: 1.05rem;
+  margin: 0 0 0.35rem;
+  color: var(--color-text);
+}
+
+.mpc-field {
+  margin-bottom: 0.85rem;
+}
+
+.mpc-field label,
+.mpc-field > .mpc-label-row label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.mpc-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.mpc-label-row label {
+  margin-bottom: 0;
+}
+
+.mpc-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mpc-toggle-btn {
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  background: var(--color-bg, rgba(0, 0, 0, 0.04));
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mpc-toggle-btn.is-active {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.mpc-input {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.mpc-input--readonly {
+  background: var(--color-bg, rgba(0, 0, 0, 0.03));
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+.mpc-input--narrow {
+  width: auto;
+  min-width: 4rem;
+  max-width: 6rem;
+}
+
+.mpc-field--inline {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .mpc-field--inline {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mpc-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mpc-row--slider {
+  flex-wrap: wrap;
+}
+
+.mpc-row--slider input[type='range'] {
+  flex: 1;
+  min-width: 120px;
+  accent-color: var(--color-accent);
+}
+
+.mpc-suffix {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.mpc-warn {
+  font-size: 0.85rem;
+  color: #b45309;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.65rem;
+  margin: 0 0 0.85rem;
+}
+
+.mpc-result {
+  margin-top: 0.5rem;
+  padding: 1rem 0.85rem;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(16, 185, 129, 0.06));
+  border: 1px solid var(--color-border);
+}
+
+.mpc-result--muted {
+  opacity: 0.85;
+}
+
+.mpc-result-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.mpc-result-hero {
+  margin: 0 0 0.85rem;
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--color-accent);
+  letter-spacing: -0.02em;
+}
+
+.mpc-result-per {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-left: 0.15rem;
+}
+
+.mpc-breakdown {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.88rem;
+}
+
+.mpc-breakdown div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.mpc-breakdown dt {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.mpc-breakdown dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+}
+
+.mpc-afford-hint {
+  margin: 0 0 0.85rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mpc-afford-hint-label {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.mpc-afford-hint-desc {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.mpc-afford-hint--affordable {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.mpc-afford-hint--affordable .mpc-afford-hint-label {
+  color: #047857;
+}
+
+.mpc-afford-hint--mid {
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+}
+
+.mpc-afford-hint--mid .mpc-afford-hint-label {
+  color: #b45309;
+}
+
+.mpc-afford-hint--premium {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.mpc-afford-hint--premium .mpc-afford-hint-label {
+  color: #4338ca;
+}
+
+.mpc-cta {
+  margin-top: 1rem;
+  padding: 1rem 0.9rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--color-accent);
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.06), transparent);
+}
+
+.mpc-cta-summary {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.mpc-cta-summary strong {
+  color: var(--color-accent);
+}
+
+.mpc-cta-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 480px) {
+  .mpc-cta-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+.mpc-cta-btn {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+  font-size: 0.9rem;
+  padding: 0.55rem 0.75rem;
+}
+

@@ -1,0 +1,1028 @@
+import { useState, useEffect, useMemo } from 'react'
+import Swal from 'sweetalert2'
+import FormActions from '../../components/FormActions'
+import type { Property, PropertyType, PropertyStatus, PaymentOption, PriceHistoryEntry } from '../../data/properties'
+import { PROPERTY_STATUS_LABELS, PAYMENT_OPTION_LABELS } from '../../data/properties'
+import type { PropertyImageUpload } from '../../services/propertiesApi'
+import { readPropertyAttachmentAsDataUrl } from '../../utils/fileDataUrl'
+import { optimizeImageForUpload, optimizeImageFiles } from '../../utils/imageUploadOptimize'
+import { resolveStorageUrl } from '../../utils/mediaUrl'
+import { formatPesoInputFromRaw } from '../../utils/mortgageUtils'
+import './AdminProperties.css'
+
+const PROPERTY_TYPES: PropertyType[] = ['Condo', 'House', 'Lot', 'Commercial']
+
+const PAYMENT_OPTIONS: PaymentOption[] = ['cash', 'bank_loan', 'in_house', 'installment']
+
+const TABS = [
+  { id: 'basic', label: 'Basic' },
+  { id: 'media', label: 'Media' },
+  { id: 'sales', label: 'Sales' },
+  { id: 'legal', label: 'Legal' },
+  { id: 'admin', label: 'Admin' },
+] as const
+type TabId = (typeof TABS)[number]['id']
+
+/** Parse price string (e.g. "₱5,000,000" or "200000") to number. */
+function parsePriceToNumber(s: string | undefined): number {
+  if (!s || !String(s).trim()) return 0
+  const digits = String(s).replace(/\D/g, '')
+  return digits ? parseInt(digits, 10) : 0
+}
+
+type Props = {
+  form: Partial<Property>
+  setForm: React.Dispatch<React.SetStateAction<Partial<Property>>>
+  onSave: (upload: PropertyImageUpload) => void | Promise<void>
+  onClose: () => void
+  isEdit: boolean
+  propertyCodeDisplay: string
+  /** Disable Save while submitting to API */
+  primaryDisabled?: boolean
+  /** 0–1 while uploading multipart */
+  uploadProgress?: number | null
+}
+
+export default function PropertyFormModal({
+  form,
+  setForm,
+  onSave,
+  onClose,
+  isEdit,
+  propertyCodeDisplay,
+  primaryDisabled = false,
+  uploadProgress = null,
+}: Props) {
+  const [activeTab, setActiveTab] = useState<TabId>('basic')
+  /** Pending uploads (sent as multipart — not base64 in JSON) */
+  const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([])
+  const [floorPlanFile, setFloorPlanFile] = useState<File | null>(null)
+
+  const coverPreviewUrl = useMemo(() => {
+    if (!coverFile) return null
+    return URL.createObjectURL(coverFile)
+  }, [coverFile])
+
+  useEffect(() => {
+    return () => {
+      if (coverPreviewUrl) URL.revokeObjectURL(coverPreviewUrl)
+    }
+  }, [coverPreviewUrl])
+
+  const galleryPreviewUrls = useMemo(
+    () => galleryFiles.map((f) => URL.createObjectURL(f)),
+    [galleryFiles]
+  )
+
+  useEffect(() => {
+    return () => {
+      galleryPreviewUrls.forEach((u) => URL.revokeObjectURL(u))
+    }
+  }, [galleryPreviewUrls])
+
+  const floorPlanPreviewUrl = useMemo(() => {
+    if (!floorPlanFile) return null
+    return URL.createObjectURL(floorPlanFile)
+  }, [floorPlanFile])
+
+  useEffect(() => {
+    return () => {
+      if (floorPlanPreviewUrl) URL.revokeObjectURL(floorPlanPreviewUrl)
+    }
+  }, [floorPlanPreviewUrl])
+
+  const update = (key: keyof Property, value: unknown) =>
+    setForm((f) => ({ ...f, [key]: value }))
+
+  const galleryUrlCount = (form.gallery ?? []).length
+  const removeGalleryAt = (index: number) => {
+    if (index < galleryUrlCount) {
+      update(
+        'gallery',
+        (form.gallery ?? []).filter((_, j) => j !== index)
+      )
+    } else {
+      const fi = index - galleryUrlCount
+      setGalleryFiles((prev) => prev.filter((_, j) => j !== fi))
+    }
+  }
+
+  return (
+    <div className="property-sidebar-overlay" onClick={onClose} role="presentation">
+      <div
+        className="property-sidebar"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-label={isEdit ? 'Edit Property' : 'Add Property'}
+      >
+        <div className="property-sidebar-header">
+          <h2>{isEdit ? 'Edit Property' : 'Add Property'}</h2>
+          <button type="button" className="property-sidebar-close" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </div>
+        <nav className="property-form-tabs" aria-label="Form sections">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`property-form-tab ${activeTab === tab.id ? 'property-form-tab--active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        <div className="property-sidebar-body">
+          {activeTab === 'basic' && (
+            <>
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Basic Info</h3>
+            <div className="admin-form-row">
+              <label>Title</label>
+              <input
+                value={form.title ?? ''}
+                onChange={(e) => update('title', e.target.value)}
+                placeholder="Listing name"
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>Property Code / ID</label>
+              <input value={propertyCodeDisplay} readOnly className="admin-input--readonly" />
+              <p className="form-field-hint">Format: CHR-YEAR-SEQUENCE (e.g. CHR-2026-000123). Auto-generated.</p>
+            </div>
+            <div className="admin-form-row">
+              <label>Type</label>
+              <select
+                value={form.type ?? 'House'}
+                onChange={(e) => update('type', e.target.value as PropertyType)}
+              >
+                {PROPERTY_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+            <div className="admin-form-row">
+              <label>Developer / Subdivision</label>
+              <input
+                value={form.developer ?? ''}
+                onChange={(e) => update('developer', e.target.value)}
+                placeholder="e.g. Ayala Land"
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>Year Built (optional)</label>
+              <input
+                type="text"
+                value={form.yearBuilt ?? ''}
+                onChange={(e) => update('yearBuilt', e.target.value)}
+                placeholder="e.g. 2020"
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>Status</label>
+              <select
+                value={form.status ?? 'draft'}
+                onChange={(e) => update('status', e.target.value as PropertyStatus)}
+              >
+                {(Object.keys(PROPERTY_STATUS_LABELS) as PropertyStatus[]).map((s) => (
+                  <option key={s} value={s}>{PROPERTY_STATUS_LABELS[s]}</option>
+                ))}
+              </select>
+            </div>
+          </section>
+
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Location</h3>
+            <div className="admin-form-row">
+              <label>Address</label>
+              <input
+                value={form.address ?? ''}
+                onChange={(e) => update('address', e.target.value)}
+                placeholder="Street, building"
+              />
+            </div>
+            <div className="admin-form-inline-row">
+              <div className="admin-form-row">
+                <label>City</label>
+                <input
+                  value={form.city ?? ''}
+                  onChange={(e) => update('city', e.target.value)}
+                  placeholder="City"
+                />
+              </div>
+              <div className="admin-form-row">
+                <label>Province</label>
+                <input
+                  value={form.province ?? ''}
+                  onChange={(e) => update('province', e.target.value)}
+                  placeholder="Province"
+                />
+              </div>
+            </div>
+            <div className="admin-form-row">
+              <label>Location (display line)</label>
+              <input
+                value={form.location ?? ''}
+                onChange={(e) => update('location', e.target.value)}
+                placeholder="e.g. Angeles City, Pampanga"
+              />
+            </div>
+          </section>
+
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Pricing</h3>
+            <div className="admin-form-row">
+              <label>Price</label>
+              <input
+                inputMode="numeric"
+                autoComplete="off"
+                value={formatPesoInputFromRaw(String(form.price ?? ''))}
+                onChange={(e) => update('price', formatPesoInputFromRaw(e.target.value))}
+                placeholder="₱0"
+              />
+            </div>
+            {(() => {
+              const priceNum = parsePriceToNumber(form.price)
+              const promoNum = parsePriceToNumber(form.promoPrice)
+              const netNum = priceNum > 0 && promoNum >= 0 ? Math.max(0, priceNum - promoNum) : null
+              return netNum !== null && (priceNum > 0 || promoNum > 0) ? (
+                <div className="admin-form-row property-form-net-price">
+                  <label>Net price after discount</label>
+                  <p className="property-form-net-price-value">
+                    ₱{netNum.toLocaleString('en-PH')}
+                  </p>
+                  <p className="form-field-hint">Auto-calculated: Price − Promo discount.</p>
+                </div>
+              ) : null
+            })()}
+            <div className="admin-form-inline-row">
+              <div className="admin-form-row">
+                <label>Downpayment</label>
+                <input
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={formatPesoInputFromRaw(String(form.downpayment ?? ''))}
+                  onChange={(e) => update('downpayment', formatPesoInputFromRaw(e.target.value))}
+                  placeholder="₱0"
+                />
+              </div>
+              <div className="admin-form-row">
+                <label>Monthly Est.</label>
+                <input
+                  value={form.monthlyEst ?? ''}
+                  onChange={(e) => update('monthlyEst', e.target.value)}
+                  placeholder="₱0"
+                />
+              </div>
+            </div>
+            <div className="admin-form-row">
+              <label>Negotiable?</label>
+              <select
+                value={form.negotiable === true ? 'yes' : form.negotiable === false ? 'no' : ''}
+                onChange={(e) => update('negotiable', e.target.value === 'yes')}
+              >
+                <option value="">—</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div className="admin-form-row">
+              <label className="property-form-label-block">Payment options</label>
+              <div className="property-form-checkbox-group">
+                {PAYMENT_OPTIONS.map((opt) => (
+                  <label key={opt} className="property-form-checkbox-option">
+                    <input
+                      type="checkbox"
+                      checked={(form.paymentOptions ?? []).includes(opt)}
+                      onChange={(e) => {
+                        const current = form.paymentOptions ?? []
+                        const next = e.target.checked
+                          ? [...current, opt]
+                          : current.filter((o) => o !== opt)
+                        update('paymentOptions', next)
+                      }}
+                    />
+                    <span>{PAYMENT_OPTION_LABELS[opt]}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          </>
+          )}
+
+          {activeTab === 'media' && (
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Media</h3>
+            <div className="admin-form-row">
+              <label>Cover Photo (URL)</label>
+              <input
+                value={coverFile ? '' : form.image ?? ''}
+                onChange={(e) => {
+                  setCoverFile(null)
+                  update('image', e.target.value)
+                }}
+                placeholder="https://… (optional if you upload a file below)"
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>Cover Photo (upload)</label>
+              <div className="file-input-wrap">
+                <span className="file-input-btn">
+                  <span className="file-input-icon">📁</span>
+                  Choose cover image…
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const input = e.target
+                    void (async () => {
+                      try {
+                        const optimized = await optimizeImageForUpload(file)
+                        setCoverFile(optimized)
+                        update('image', '')
+                      } catch (err) {
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'Could not process image',
+                          text: err instanceof Error ? err.message : 'Try a smaller JPG/PNG/WebP.',
+                        })
+                      } finally {
+                        input.value = ''
+                      }
+                    })()
+                  }}
+                  className="file-input-hidden"
+                  aria-label="Upload cover image"
+                />
+              </div>
+              {(coverPreviewUrl ||
+                (!coverFile &&
+                  form.image &&
+                  (/^https?:\/\//i.test(form.image) || String(form.image).startsWith('/storage')))) && (
+                <div className="property-form-cover-preview">
+                  <img
+                    src={coverPreviewUrl ?? form.image}
+                    alt=""
+                    className="property-form-cover-preview-img"
+                  />
+                  {coverFile && (
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline"
+                      onClick={() => setCoverFile(null)}
+                    >
+                      Remove uploaded cover
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="admin-form-row">
+              <label>Gallery (choose files)</label>
+              <div className="file-input-wrap">
+                <span className="file-input-btn">
+                  <span className="file-input-icon">📁</span>
+                  Add gallery images…
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg,image/webp"
+                  multiple
+                  onChange={(e) => {
+                    const files = e.target.files
+                    if (!files?.length) return
+                    const input = e.target
+                    void (async () => {
+                      try {
+                        const optimized = await optimizeImageFiles(Array.from(files))
+                        setGalleryFiles((prev) => [...prev, ...optimized])
+                      } catch (err) {
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'Could not process images',
+                          text: err instanceof Error ? err.message : 'Try smaller JPG/PNG/WebP files.',
+                        })
+                      } finally {
+                        input.value = ''
+                      }
+                    })()
+                  }}
+                  className="file-input-hidden"
+                  aria-label="Choose gallery images"
+                />
+              </div>
+              {galleryUrlCount + galleryFiles.length > 0 && (
+                <div className="property-form-gallery-preview">
+                  <span className="property-form-gallery-count">
+                    {galleryUrlCount + galleryFiles.length} image(s)
+                    {galleryUrlCount > 0 && ` (${galleryUrlCount} saved URL${galleryUrlCount === 1 ? '' : 's'})`}
+                    {galleryFiles.length > 0 && ` (${galleryFiles.length} new upload${galleryFiles.length === 1 ? '' : 's'})`}
+                  </span>
+                  <div className="property-form-gallery-thumbs">
+                    {(form.gallery ?? []).map((src, i) => (
+                      <span key={`url-${i}`} className="property-form-gallery-thumb-wrap">
+                        <img src={src} alt="" className="property-form-gallery-thumb" />
+                        <button
+                          type="button"
+                          className="property-form-gallery-remove"
+                          onClick={() => removeGalleryAt(i)}
+                          aria-label="Remove image"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    {galleryPreviewUrls.map((src, i) => (
+                      <span key={`file-${i}`} className="property-form-gallery-thumb-wrap">
+                        <img src={src} alt="" className="property-form-gallery-thumb" />
+                        <button
+                          type="button"
+                          className="property-form-gallery-remove"
+                          onClick={() => removeGalleryAt(galleryUrlCount + i)}
+                          aria-label="Remove image"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline"
+                    onClick={() => {
+                      update('gallery', [])
+                      setGalleryFiles([])
+                    }}
+                  >
+                    Clear gallery
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="admin-form-row">
+              <label>Floor Plan (choose file)</label>
+              <div className="file-input-wrap">
+                <span className="file-input-btn">
+                  <span className="file-input-icon">📄</span>
+                  Choose image or PDF…
+                </span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const input = e.target
+                    if (file.size > 4 * 1024 * 1024) {
+                      Swal.fire({
+                        icon: 'error',
+                        title: 'File too large',
+                        text: 'Floor plan must be 4MB or smaller.',
+                      })
+                      input.value = ''
+                      return
+                    }
+                    setFloorPlanFile(file)
+                    update('floorPlan', undefined)
+                    input.value = ''
+                  }}
+                  className="file-input-hidden"
+                  aria-label="Choose floor plan file"
+                />
+              </div>
+              {(floorPlanFile || (form.floorPlan && !String(form.floorPlan).startsWith('data:'))) && (
+                <div className="property-form-file-preview">
+                  <span className="property-form-file-label">
+                    {floorPlanFile
+                      ? floorPlanFile.type === 'application/pdf'
+                        ? `PDF: ${floorPlanFile.name}`
+                        : `Image: ${floorPlanFile.name}`
+                      : form.floorPlan?.toLowerCase().includes('.pdf')
+                        ? 'PDF on server'
+                        : 'Image on server'}
+                  </span>
+                  {floorPlanPreviewUrl && floorPlanFile?.type !== 'application/pdf' && (
+                    <img
+                      src={floorPlanPreviewUrl}
+                      alt=""
+                      className="property-form-cover-preview-img"
+                      style={{ maxHeight: 120, marginTop: 8 }}
+                    />
+                  )}
+                  {floorPlanPreviewUrl && floorPlanFile?.type === 'application/pdf' && (
+                    <p className="form-field-hint" style={{ marginTop: 8 }}>
+                      <a href={floorPlanPreviewUrl} target="_blank" rel="noopener noreferrer">
+                        Preview PDF
+                      </a>
+                    </p>
+                  )}
+                  {!floorPlanFile && form.floorPlan && !String(form.floorPlan).startsWith('data:') && (
+                    <p className="form-field-hint" style={{ marginTop: 8 }}>
+                      Current:{' '}
+                      <a
+                        href={resolveStorageUrl(form.floorPlan)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Open current floor plan
+                      </a>
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline"
+                    onClick={() => {
+                      setFloorPlanFile(null)
+                      update('floorPlan', undefined)
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="admin-form-row">
+              <label>Virtual Tour (link)</label>
+              <input
+                value={form.virtualTourUrl ?? ''}
+                onChange={(e) => update('virtualTourUrl', e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+          </section>
+          )}
+
+          {activeTab === 'sales' && (
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Status & Sales</h3>
+            <div className="admin-form-row">
+              <label>Status</label>
+              <select
+                value={form.status ?? 'draft'}
+                onChange={(e) => update('status', e.target.value as PropertyStatus)}
+              >
+                {(Object.keys(PROPERTY_STATUS_LABELS) as PropertyStatus[]).map((s) => (
+                  <option key={s} value={s}>{PROPERTY_STATUS_LABELS[s]}</option>
+                ))}
+              </select>
+            </div>
+            <div className="admin-form-row">
+              <label>Availability Date</label>
+              <input
+                type="date"
+                value={form.availabilityDate ?? ''}
+                onChange={(e) => update('availabilityDate', e.target.value)}
+              />
+            </div>
+            <div className="admin-form-inline-row">
+              <div className="admin-form-row">
+                <label>Promo price</label>
+                <input
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={formatPesoInputFromRaw(String(form.promoPrice ?? ''))}
+                  onChange={(e) => update('promoPrice', formatPesoInputFromRaw(e.target.value))}
+                  placeholder="₱0 (discount amount)"
+                />
+              </div>
+              <div className="admin-form-row">
+                <label>Promo until</label>
+                <input
+                  type="date"
+                  value={form.promoUntil ?? ''}
+                  onChange={(e) => update('promoUntil', e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+            {(() => {
+              const priceNum = parsePriceToNumber(form.price)
+              const promoNum = parsePriceToNumber(form.promoPrice)
+              const netNum = priceNum > 0 && promoNum >= 0 ? Math.max(0, priceNum - promoNum) : null
+              return netNum !== null && priceNum > 0 ? (
+                <div className="admin-form-row property-form-net-price">
+                  <label>Net price after discount</label>
+                  <p className="property-form-net-price-value">₱{netNum.toLocaleString('en-PH')}</p>
+                  <p className="form-field-hint">Auto-calculated: Price − Promo discount.</p>
+                </div>
+              ) : null
+            })()}
+            {(form.priceHistory ?? []).length > 0 && (
+              <div className="admin-form-row property-form-price-history">
+                <label className="property-form-label-block">Price history</label>
+                <p className="property-form-price-history-value">
+                  {(form.priceHistory ?? [])
+                    .map((e: PriceHistoryEntry) => e.price)
+                    .join(' → ')}
+                </p>
+                <p className="property-form-price-history-hint">Auto-logged. Display only.</p>
+              </div>
+            )}
+            <div className="admin-form-row">
+              <label htmlFor="property-mortgage-rate">Annual interest rate (%)</label>
+              <input
+                id="property-mortgage-rate"
+                type="number"
+                min={0}
+                max={40}
+                step={0.1}
+                className="admin-input"
+                value={
+                  form.mortgageInterestRate != null && Number.isFinite(form.mortgageInterestRate)
+                    ? form.mortgageInterestRate
+                    : 6.5
+                }
+                onChange={(e) => {
+                  const raw = e.target.value
+                  if (raw === '') {
+                    update('mortgageInterestRate', 6.5)
+                    return
+                  }
+                  const v = parseFloat(raw)
+                  if (!Number.isFinite(v)) {
+                    update('mortgageInterestRate', 6.5)
+                    return
+                  }
+                  update('mortgageInterestRate', Math.min(40, Math.max(0, v)))
+                }}
+              />
+            </div>
+          </section>
+          )}
+
+          {activeTab === 'basic' && (
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Details</h3>
+            <div className="admin-form-inline-row">
+              <div className="admin-form-row">
+                <label>Floor Area</label>
+                <input
+                  value={form.floorArea ?? form.area ?? ''}
+                  onChange={(e) => update('floorArea', e.target.value)}
+                  placeholder="e.g. 95 sqm"
+                />
+              </div>
+              <div className="admin-form-row">
+                <label>Lot Area</label>
+                <input
+                  value={form.lotArea ?? ''}
+                  onChange={(e) => update('lotArea', e.target.value)}
+                  placeholder="e.g. 120 sqm"
+                />
+              </div>
+            </div>
+            <div className="admin-form-inline-row">
+              <div className="admin-form-row">
+                <label>Bedrooms</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.beds ?? 0}
+                  onChange={(e) => update('beds', parseInt(e.target.value, 10) || 0)}
+                />
+              </div>
+              <div className="admin-form-row">
+                <label>Bathrooms</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.baths ?? 0}
+                  onChange={(e) => update('baths', parseInt(e.target.value, 10) || 0)}
+                />
+              </div>
+              <div className="admin-form-row">
+                <label>Parking</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.parking ?? 0}
+                  onChange={(e) => update('parking', parseInt(e.target.value, 10) || 0)}
+                />
+              </div>
+            </div>
+            <div className="admin-form-row">
+              <label>Area (display)</label>
+              <input
+                value={form.area ?? ''}
+                onChange={(e) => update('area', e.target.value)}
+                placeholder="e.g. 95 sqm"
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>Furnished?</label>
+              <select
+                value={form.furnished === true ? 'yes' : form.furnished === false ? 'no' : ''}
+                onChange={(e) => update('furnished', e.target.value === 'yes')}
+              >
+                <option value="">—</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </section>
+          )}
+
+          {activeTab === 'admin' && (
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Visibility</h3>
+            <div className="admin-form-row admin-form-row--toggle">
+              <label className="form-toggle-label">
+                <span className="form-toggle-row">
+                  <span className="form-toggle-wrap">
+                    <input
+                      type="checkbox"
+                      className="form-toggle-input"
+                      checked={form.showOnWebsite === true}
+                      onChange={(e) => update('showOnWebsite', e.target.checked)}
+                    />
+                    <span className="form-toggle-slider" />
+                  </span>
+                  <span className="form-toggle-text">Show on Website</span>
+                </span>
+              </label>
+            </div>
+            <div className="admin-form-row">
+              <label htmlFor="property-fb-link">Facebook Post Link</label>
+              <input
+                id="property-fb-link"
+                type="url"
+                value={typeof form.showOnFacebook === 'string' ? form.showOnFacebook : ''}
+                onChange={(e) => update('showOnFacebook', e.target.value || undefined)}
+                placeholder="https://facebook.com/..."
+              />
+            </div>
+            <div className="admin-form-row admin-form-row--toggle">
+              <label className="form-toggle-label">
+                <span className="form-toggle-row">
+                  <span className="form-toggle-wrap">
+                    <input
+                      type="checkbox"
+                      className="form-toggle-input"
+                      checked={form.featuredListing === true}
+                      onChange={(e) => update('featuredListing', e.target.checked)}
+                    />
+                    <span className="form-toggle-slider" />
+                  </span>
+                  <span className="form-toggle-text">Mark as Featured</span>
+                </span>
+              </label>
+            </div>
+          </section>
+          )}
+
+          {activeTab === 'legal' && (
+          <>
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Legal & Ownership</h3>
+            <div className="admin-form-row">
+              <label>Title type</label>
+              <select
+                value={form.titleType ?? ''}
+                onChange={(e) => update('titleType', e.target.value === '' ? undefined : (e.target.value as 'TCT' | 'CCT'))}
+              >
+                <option value="">—</option>
+                <option value="TCT">TCT</option>
+                <option value="CCT">CCT</option>
+              </select>
+            </div>
+            <div className="admin-form-row">
+              <label>Title number</label>
+              <input
+                value={form.titleNumber ?? ''}
+                onChange={(e) => update('titleNumber', e.target.value)}
+                placeholder="e.g. 12345"
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>Registered owner</label>
+              <input
+                value={form.registeredOwner ?? ''}
+                onChange={(e) => update('registeredOwner', e.target.value)}
+                placeholder="As shown on title"
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>Tax declaration no.</label>
+              <input
+                value={form.taxDeclarationNo ?? ''}
+                onChange={(e) => update('taxDeclarationNo', e.target.value)}
+                placeholder="Optional"
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>Last transfer date</label>
+              <input
+                type="date"
+                value={form.lastTransferDate ?? ''}
+                onChange={(e) => update('lastTransferDate', e.target.value)}
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>With encumbrance?</label>
+              <select
+                value={form.withEncumbrance === true ? 'yes' : form.withEncumbrance === false ? 'no' : ''}
+                onChange={(e) => update('withEncumbrance', e.target.value === 'yes')}
+              >
+                <option value="">—</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div className="admin-form-row">
+              <label>Remarks (legal)</label>
+              <input
+                value={form.legalStatus ?? ''}
+                onChange={(e) => update('legalStatus', e.target.value)}
+                placeholder="e.g. Clean title, other notes"
+              />
+            </div>
+          </section>
+
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Documents</h3>
+            <div className="admin-form-row">
+              <label>Contract</label>
+              <div className="file-input-wrap">
+                <span className="file-input-btn">
+                  <span className="file-input-icon">📄</span>
+                  {form.documentContract ? 'Change file…' : 'Choose file…'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const input = e.target
+                    void (async () => {
+                      try {
+                        const dataUrl = await readPropertyAttachmentAsDataUrl(file)
+                        update('documentContract', dataUrl)
+                      } catch (err) {
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'Could not read file',
+                          text: err instanceof Error ? err.message : 'Try a smaller PDF or image.',
+                        })
+                      } finally {
+                        input.value = ''
+                      }
+                    })()
+                  }}
+                  className="file-input-hidden"
+                  aria-label="Contract"
+                />
+              </div>
+              {form.documentContract && (
+                <div className="property-form-file-preview">
+                  <span className="property-form-file-label">Contract attached</span>
+                  <button type="button" className="btn btn-sm btn-outline" onClick={() => update('documentContract', undefined)}>Remove</button>
+                </div>
+              )}
+            </div>
+            <div className="admin-form-row">
+              <label>Reservation Form</label>
+              <div className="file-input-wrap">
+                <span className="file-input-btn">
+                  <span className="file-input-icon">📄</span>
+                  {form.documentReservationForm ? 'Change file…' : 'Choose file…'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const input = e.target
+                    void (async () => {
+                      try {
+                        const dataUrl = await readPropertyAttachmentAsDataUrl(file)
+                        update('documentReservationForm', dataUrl)
+                      } catch (err) {
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'Could not read file',
+                          text: err instanceof Error ? err.message : 'Try a smaller PDF or image.',
+                        })
+                      } finally {
+                        input.value = ''
+                      }
+                    })()
+                  }}
+                  className="file-input-hidden"
+                  aria-label="Reservation Form"
+                />
+              </div>
+              {form.documentReservationForm && (
+                <div className="property-form-file-preview">
+                  <span className="property-form-file-label">Reservation form attached</span>
+                  <button type="button" className="btn btn-sm btn-outline" onClick={() => update('documentReservationForm', undefined)}>Remove</button>
+                </div>
+              )}
+            </div>
+            <div className="admin-form-row">
+              <label>Title Copy</label>
+              <div className="file-input-wrap">
+                <span className="file-input-btn">
+                  <span className="file-input-icon">📄</span>
+                  {form.documentTitleCopy ? 'Change file…' : 'Choose file…'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const input = e.target
+                    void (async () => {
+                      try {
+                        const dataUrl = await readPropertyAttachmentAsDataUrl(file)
+                        update('documentTitleCopy', dataUrl)
+                      } catch (err) {
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'Could not read file',
+                          text: err instanceof Error ? err.message : 'Try a smaller PDF or image.',
+                        })
+                      } finally {
+                        input.value = ''
+                      }
+                    })()
+                  }}
+                  className="file-input-hidden"
+                  aria-label="Title Copy"
+                />
+              </div>
+              {form.documentTitleCopy && (
+                <div className="property-form-file-preview">
+                  <span className="property-form-file-label">Title copy attached</span>
+                  <button type="button" className="btn btn-sm btn-outline" onClick={() => update('documentTitleCopy', undefined)}>Remove</button>
+                </div>
+              )}
+            </div>
+          </section>
+          </>
+          )}
+
+          {activeTab === 'admin' && (
+          <>
+          <section className="property-form-section">
+            <h3 className="property-form-section-title">Notes (Admin Only)</h3>
+            <div className="admin-form-row">
+              <label>Internal notes</label>
+              <textarea
+                value={form.internalNotes ?? ''}
+                onChange={(e) => update('internalNotes', e.target.value)}
+                rows={2}
+                placeholder="Internal notes"
+              />
+            </div>
+            <div className="admin-form-row">
+              <label>Owner instructions</label>
+              <textarea
+                value={form.ownerInstructions ?? ''}
+                onChange={(e) => update('ownerInstructions', e.target.value)}
+                rows={2}
+                placeholder="Owner instructions"
+              />
+            </div>
+          </section>
+          </>
+          )}
+
+        </div>
+        {uploadProgress != null && (
+          <div
+            className="property-upload-progress"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(uploadProgress * 100)}
+          >
+            <div
+              className="property-upload-progress-fill"
+              style={{ width: `${Math.min(100, Math.round(uploadProgress * 100))}%` }}
+            />
+            <span className="property-upload-progress-label">
+              Uploading… {Math.round(uploadProgress * 100)}%
+            </span>
+          </div>
+        )}
+        <FormActions
+          primaryLabel={isEdit ? 'Save' : 'Add Property'}
+          onPrimary={() => void onSave({ coverFile, galleryFiles, floorPlanFile })}
+          onCancel={onClose}
+          primaryDisabled={primaryDisabled}
+          className="property-sidebar-footer"
+        />
+      </div>
+    </div>
+  )
+}

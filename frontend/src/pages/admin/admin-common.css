@@ -1,0 +1,281 @@
+.admin-page-title { font-size: 1.35rem; margin: 0 0 0.25rem; }
+.admin-page-subtitle { color: var(--color-text-muted); font-size: 0.95rem; margin: 0 0 1rem; }
+.admin-toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.admin-table-wrap { background: var(--color-surface); border-radius: var(--radius); border: 1px solid var(--color-border); overflow: hidden; }
+
+/* Sticky action bar for form sidebars (Property, Client, Deal) — stays at bottom while body scrolls */
+.sidebar-form-footer {
+  flex-shrink: 0;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+.sidebar-form-footer .admin-form-actions {
+  margin: 0;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-table { width: 100%; border-collapse: collapse; }
+.admin-table th,
+.admin-table td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--color-border); }
+.admin-table th { background: var(--color-bg-alt); font-weight: 600; font-size: 0.85rem; }
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: var(--color-bg); }
+.admin-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.8rem; font-weight: 500; }
+.admin-badge--new { background: #dbeafe; color: #1e40af; }
+.admin-badge--contacted { background: #fef3c7; color: #92400e; }
+.admin-badge--interested { background: #d1fae5; color: #065f46; }
+.admin-badge--negotiating { background: #ffedd5; color: #c2410c; }
+.admin-badge--reserved { background: #bfdbfe; color: #1e40af; }
+.admin-badge--closed { background: #d1fae5; color: #065f46; }
+.admin-badge--lost { background: #fee2e2; color: #b91c1c; }
+.admin-badge--inactive { background: #e5e7eb; color: #374151; }
+.admin-badge--active { background: #d1fae5; color: #065f46; }
+.admin-badge--qualified { background: #dbeafe; color: #1e40af; }
+.admin-badge--converted { background: #bbf7d0; color: #14532d; }
+
+/* Shared compact controls for per-column table filters */
+.admin-table-filter-row th {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+.admin-input--sm {
+  min-width: 90px;
+  width: 100%;
+  font-size: 0.82rem;
+  padding-top: 0.28rem;
+  padding-bottom: 0.28rem;
+}
+
+/* Shared column-header filters (same pattern as Clients table) */
+.th-filter {
+  vertical-align: top;
+}
+.th-status-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.table-col-filter--inline {
+  margin-top: 0.35rem;
+}
+.th-label-btn {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.th-label-btn:hover {
+  color: var(--color-accent);
+}
+.th-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: var(--color-bg-alt);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.th-dropdown-trigger:hover,
+.th-dropdown-trigger--open {
+  background: var(--color-border);
+  color: var(--color-accent);
+}
+.th-dropdown-trigger-icon {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  line-height: 0.5;
+}
+.th-dropdown-trigger-icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.th-dropdown-trigger-icon svg:last-child {
+  margin-top: -2px;
+}
+.th-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.25rem;
+  min-width: 150px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 50;
+  padding: 0.25rem 0;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.th-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-text);
+}
+.th-dropdown-item:hover {
+  background: var(--color-bg-alt);
+}
+.th-dropdown-item--active {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+.admin-badge--available { background: #059669; color: #fff; }
+.admin-badge--sold { background: #6b7280; color: #fff; }
+.admin-badge--draft { background: #9ca3af; color: #fff; }
+.admin-badge--reserved { background: #3b82f6; color: #fff; }
+.admin-badge--under_negotiation { background: #ea580c; color: #fff; }
+.admin-badge--processing_docs { background: #4f46e5; color: #fff; }
+.admin-badge--cancelled { background: #b91c1c; color: #fff; }
+.admin-badge--archived { background: #b91c1c; color: #fff; }
+.admin-badge--blacklisted { background: #fee2e2; color: #b91c1c; }
+/* Deal pipeline: inquiry (gray) → negotiation (blue) → reserved (orange) → processing (purple) → closed (green); cancelled = red */
+.admin-badge--deal-inquiry { background: #e5e7eb; color: #374151; }
+.admin-badge--deal-negotiation { background: #dbeafe; color: #1e40af; }
+.admin-badge--deal-reserved { background: #ffedd5; color: #c2410c; }
+.admin-badge--deal-processing-documents { background: #ede9fe; color: #5b21b6; }
+.admin-badge--deal-closed { background: #d1fae5; color: #065f46; }
+.admin-badge--deal-cancelled { background: #fee2e2; color: #b91c1c; }
+.admin-input { padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius); font-size: 0.95rem; min-width: 200px; }
+
+/* Styled "Choose file" button — use .file-input-wrap > .file-input-btn + .file-input-hidden */
+.file-input-wrap {
+  position: relative;
+  display: inline-block;
+  min-width: 200px;
+}
+.file-input-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.file-input-wrap:hover .file-input-btn {
+  border-color: var(--color-accent);
+  background: rgba(193, 127, 89, 0.06);
+  color: var(--color-accent);
+}
+.file-input-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  opacity: 0.9;
+}
+.file-input-hidden {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
+.btn-outline { background: transparent; border: 1px solid var(--color-border); color: var(--color-text); }
+.btn-outline:hover { background: var(--color-bg-alt); color: var(--color-text); }
+.btn-danger { background: #dc2626; color: #fff; border-color: #dc2626; }
+.btn-danger:hover { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+.btn-icon { margin-right: 0.35rem; vertical-align: -0.15em; }
+
+/* Lead follow-up tags — shared by Inquiries + Dashboard */
+.admin-inquiry-followup-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  padding: 0.28rem 0.45rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.admin-inquiry-followup-tag--inline { margin-right: 0.15rem; }
+.admin-inquiry-followup-tag--overdue {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.admin-inquiry-followup-tag--today {
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+}
+.admin-inquiry-followup-tag--upcoming {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+/* Rich tooltips for icon actions — use data-tooltip + title + aria-label */
+.btn-icon-btn[data-tooltip],
+a.btn-icon-btn[data-tooltip] {
+  position: relative;
+}
+@media (hover: hover) {
+  .btn-icon-btn[data-tooltip]:hover::after,
+  a.btn-icon-btn[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.45rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #fff;
+    background: var(--color-hero, #352516);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    z-index: 400;
+    pointer-events: none;
+    width: max-content;
+    max-width: 15rem;
+    text-align: center;
+    white-space: normal;
+  }
+  .btn-icon-btn[data-tooltip]:hover::before,
+  a.btn-icon-btn[data-tooltip]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--color-hero, #352516);
+    z-index: 401;
+    pointer-events: none;
+  }
+}
+.admin-table td.col-actions {
+  overflow: visible;
+  position: relative;
+}

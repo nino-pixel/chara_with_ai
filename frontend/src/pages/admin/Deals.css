@@ -1,0 +1,144 @@
+.admin-deals .admin-toolbar {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.admin-deals-search {
+  flex: 1 1 240px;
+  min-width: min(100%, 260px);
+  max-width: 36rem;
+}
+
+.deals-table thead th.th-plain {
+  vertical-align: bottom;
+}
+
+/* Scrollable table — fixed height, overflow when content doesn't fit (same as Properties / Clients) */
+.admin-deals-table-wrap {
+  overflow: auto;
+  height: 520px;
+  min-height: 320px;
+  max-height: min(520px, calc(100vh - 220px));
+}
+.admin-deals-table-wrap .admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-bg-alt) !important;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 0 var(--color-border);
+}
+
+.deals-table .deals-amount { white-space: nowrap; font-weight: 500; }
+.deals-table .deals-deal-id { font-weight: 600; font-family: var(--font-sans); }
+.deals-table .deals-discount { white-space: nowrap; color: var(--color-text-muted); font-size: 0.9rem; }
+
+.deals-table .deals-payments { white-space: nowrap; font-size: 0.9rem; }
+.deals-table .col-actions { white-space: nowrap; }
+.col-actions { width: 1%; }
+.btn-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-icon-btn:hover { background: var(--color-border); color: var(--color-accent); }
+.btn-icon-btn svg { width: 1.1rem; height: 1.1rem; }
+.btn-icon-btn + .btn-icon-btn { margin-left: 0.25rem; }
+
+/* Add Deal sidebar — same pattern as Client / Property */
+.deal-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+  animation: deal-sidebar-fadeIn 0.25s ease;
+}
+@keyframes deal-sidebar-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.deal-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-surface);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  z-index: 1001;
+  animation: deal-sidebar-slideIn 0.3s ease;
+}
+@keyframes deal-sidebar-slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.deal-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.deal-sidebar-header h2 { font-size: 1.15rem; margin: 0; }
+.deal-sidebar-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+.deal-sidebar-close:hover { color: var(--color-text); }
+.deal-sidebar-body {
+  padding: 1.25rem;
+  overflow: auto;
+  flex: 1;
+}
+.deal-sidebar-body .admin-form-row { margin-bottom: 1rem; }
+.deal-sidebar-body .admin-form-row label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.35rem; }
+.deal-sidebar-body .admin-form-row .admin-input { width: 100%; min-width: 0; }
+.deal-sidebar-payment-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.deal-sidebar-payment-row .admin-input { flex: 1; min-width: 0; }
+.deal-sidebar-payment-row .admin-input[type="date"] { min-width: 140px; }
+.deal-form-hint { display: block; font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem; }
+
+.deals-modal { max-width: 420px; }
+.deals-view-modal { max-width: 520px; }
+
+.deals-view-dl {
+  margin: 0 0 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1.5rem;
+  align-items: baseline;
+}
+.deals-view-dl dt {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+.deals-view-dl dd { margin: 0; font-size: 0.95rem; }
+.deals-view-dl dd + dt { margin-top: 0.5rem; }
+.deals-view-dl dt:nth-of-type(odd) { grid-column: 1; }
+.deals-view-dl dd:nth-of-type(odd) { grid-column: 2; }
+
+/* Deal pipeline status badges — defined in admin-common.css for reuse on Deal Profile */

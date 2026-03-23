@@ -1,0 +1,52 @@
+.lead-qualify-fieldset {
+  margin: 0 0 1rem;
+  padding: 0.85rem 0.9rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg, rgba(0, 0, 0, 0.02));
+}
+
+.lead-qualify-legend {
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0 0.35rem;
+  color: var(--color-text);
+}
+
+.lead-qualify-intro {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.lead-qualify-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin: 0.65rem 0 0.3rem;
+  color: var(--color-text);
+}
+
+.lead-qualify-label:first-of-type {
+  margin-top: 0;
+}
+
+.lead-qualify-optional {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.lead-qualify-select {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.65rem;
+  font-size: 0.9rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.lead-qualify-fieldset .lead-qualify-select + .lead-qualify-label {
+  margin-top: 0.65rem;
+}

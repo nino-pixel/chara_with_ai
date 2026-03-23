@@ -1,0 +1,159 @@
+/* Dashboard — chart-based control panel */
+
+.admin-dashboard .admin-page-title { font-size: 1.5rem; margin: 0 0 1.5rem; }
+
+.dashboard-section { margin-bottom: 2rem; }
+
+/* Leads needing attention widget */
+.dashboard-leads-attention-table .dashboard-leads-attention-row {
+  cursor: pointer;
+}
+.dashboard-leads-attention-table .dashboard-leads-attention-row:hover td {
+  background: var(--color-bg-alt);
+}
+.dashboard-leads-attention-empty {
+  padding: 1rem 1.25rem !important;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+.dashboard-leads-attention-tag {
+  font-size: 0.68rem;
+}
+
+/* Leads attention + Recent activity — two columns */
+.dashboard-leads-activity-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+.dashboard-leads-activity-panel {
+  min-width: 0;
+}
+.dashboard-leads-activity-panel .admin-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 1024px) {
+  .dashboard-leads-activity-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 1. Summary cards — top row (fill full width) */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+}
+.dashboard-card {
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  text-align: center;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+.dashboard-card:hover { box-shadow: var(--shadow-md); text-decoration: none; color: inherit; }
+.dashboard-card--blue { background: #dbeafe; border: 1px solid #93c5fd; }
+.dashboard-card--blue .admin-stat-value { color: #1e40af; }
+.dashboard-card--green { background: #d1fae5; border: 1px solid #6ee7b7; }
+.dashboard-card--green .admin-stat-value { color: #065f46; }
+.dashboard-card--teal { background: #ccfbf1; border: 1px solid #5eead4; }
+.dashboard-card--teal .admin-stat-value { color: #0f766e; }
+.dashboard-card--yellow { background: #fef3c7; border: 1px solid #fcd34d; }
+.dashboard-card--yellow .admin-stat-value { color: #92400e; }
+.dashboard-card--red { background: #fee2e2; border: 1px solid #fca5a5; }
+.dashboard-card--red .admin-stat-value { color: #b91c1c; }
+.dashboard-card--purple { background: #ede9fe; border: 1px solid #c4b5fd; }
+.dashboard-card--purple .admin-stat-value { color: #5b21b6; }
+
+.dashboard-card .admin-stat-value { display: block; font-size: 1.6875rem; font-weight: 700; }
+.dashboard-card .admin-stat-label { font-size: 0.95rem; color: var(--color-text-muted); }
+
+/* Chart blocks */
+.dashboard-chart-title { font-size: 1.125rem; margin: 0 0 0.75rem; font-weight: 600; }
+.dashboard-chart-block { margin-bottom: 1.5rem; }
+.dashboard-chart-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  min-height: 200px;
+}
+.dashboard-chart-wrap--line,
+.dashboard-chart-wrap--bar-inline { min-height: 280px; }
+.dashboard-chart-wrap--bar,
+.dashboard-chart-wrap--pie { min-height: 260px; }
+
+/* Two columns: Bar (source) + Pie (status), and Pipeline + Leads per month */
+.dashboard-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+.dashboard-charts-row--pipeline-leads .dashboard-chart-block--half {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.dashboard-charts-row--pipeline-leads .dashboard-chart-wrap--pipeline,
+.dashboard-charts-row--pipeline-leads .dashboard-chart-wrap--leads-month {
+  flex: 1;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-charts-row--pipeline-leads .dashboard-chart-wrap--pipeline .recharts-responsive-container,
+.dashboard-charts-row--pipeline-leads .dashboard-chart-wrap--leads-month .recharts-responsive-container {
+  flex: 1;
+  min-height: 240px;
+}
+@media (max-width: 900px) {
+  .dashboard-charts-row { grid-template-columns: 1fr; }
+  .dashboard-cards { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px) {
+  .dashboard-cards { grid-template-columns: 1fr; }
+}
+
+.dashboard-chart-block--half { margin-bottom: 0; }
+
+/* Recent activity table */
+.dashboard-section .admin-table-wrap { margin-top: 0; }
+
+.admin-dashboard table tbody tr {
+  cursor: pointer;
+}
+
+.dashboard-activity-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.dashboard-activity-icon {
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--color-text-muted);
+}
+
+/* Recharts overrides to match theme */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line { stroke: var(--color-border); }
+.recharts-default-tooltip {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+.recharts-legend-item-text { color: var(--color-text); }
+
+/* Property Status pie — smaller legend only (no segment labels) */
+.dashboard-chart-wrap--pie .recharts-legend-wrapper { font-size: 11px; }
+.dashboard-chart-wrap--pie .recharts-legend-item { margin-right: 10px; margin-bottom: 2px; }
+.dashboard-chart-wrap--pie .recharts-legend-item-text { font-size: 11px; }
+.dashboard-chart-wrap--pie .recharts-legend-icon { width: 8px; height: 8px; }
