@@ -1,15 +1,19 @@
 .property-card {
   background: var(--color-surface);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
-  transition: box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.04); /* softer border */
+  transition: box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
+  display: flex;
+  flex-direction: column;
 }
+
 .property-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-6px);
 }
+
 .property-card-image-link {
   text-decoration: none;
   color: inherit;
@@ -17,68 +21,125 @@
   width: 100%;
   height: 100%;
 }
-.property-card-image-link:hover {
-  color: inherit;
-}
+
 .property-card-body-link {
   text-decoration: none;
   color: inherit;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
-.property-card-body-link:hover {
-  color: inherit;
-}
+
 .property-card-image {
   position: relative;
   aspect-ratio: 4/3;
   overflow: hidden;
 }
+
 .property-card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.6s var(--ease);
 }
+
 .property-card:hover .property-card-image img {
-  transform: scale(1.05);
+  transform: scale(1.08); /* elegant zoom */
 }
+
+/* Glassmorphism Context Pill */
 .property-card-context-pill {
   position: absolute;
-  bottom: 0.75rem;
-  left: 0.75rem;
-  max-width: calc(100% - 1.5rem);
-  font-size: 0.7rem;
+  bottom: 1rem;
+  left: 1rem;
+  max-width: calc(100% - 2rem);
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 0.35rem 0.55rem;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--color-hero, #352516);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  color: var(--color-hero);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   line-height: 1.25;
 }
+
+/* Glassmorphism Status Badges */
 .property-card-status {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 1rem;
+  right: 1rem;
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  padding: 0.35rem 0.6rem;
-  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-.property-card-status--available { background: var(--color-accent); color: #fff; }
-.property-card-status--sold { background: #6b7280; color: #fff; }
-.property-card-status--reserved { background: #3b82f6; color: #fff; }
-.property-card-status--under_negotiation { background: #ea580c; color: #fff; }
-.property-card-status--processing_docs { background: #4f46e5; color: #fff; }
-.property-card-status--cancelled { background: #b91c1c; color: #fff; }
-.property-card-status--draft { background: #9ca3af; color: #fff; }
-.property-card-status--archived { background: #6b7280; color: #fff; }
-.property-card-body { padding: 1rem; transition: color 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-.property-card-price { font-family: var(--font-sans); font-size: 1.25rem; font-weight: 700; color: var(--color-accent); margin: 0 0 0.25rem; }
-.property-card-title { font-size: 1rem; margin: 0 0 0.35rem; }
-.property-card-location { font-size: 0.9rem; color: var(--color-text-muted); margin: 0 0 0.5rem; }
-.property-card-specs { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; color: var(--color-text-muted); display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
-.property-card--featured .property-card-body { padding: 1.25rem; }
+
+/* Adjusted colors for glassmorphism - slightly transparent backgrounds */
+.property-card-status--available { background: rgba(193, 155, 108, 0.9); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+.property-card-status--sold { background: rgba(107, 114, 128, 0.9); color: #fff; }
+.property-card-status--reserved { background: rgba(59, 130, 246, 0.9); color: #fff; }
+.property-card-status--under_negotiation { background: rgba(234, 88, 12, 0.9); color: #fff; }
+.property-card-status--processing_docs { background: rgba(79, 70, 229, 0.9); color: #fff; }
+.property-card-status--cancelled { background: rgba(185, 28, 28, 0.9); color: #fff; }
+.property-card-status--draft { background: rgba(156, 163, 175, 0.9); color: #fff; }
+.property-card-status--archived { background: rgba(107, 114, 128, 0.9); color: #fff; }
+
+.property-card-body { 
+  padding: 1.5rem; 
+  transition: color var(--duration) var(--ease); 
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.property-card-price { 
+  font-family: var(--font-sans); 
+  font-size: 1.4rem; 
+  font-weight: 700; 
+  color: var(--color-accent); 
+  margin: 0 0 0.5rem; 
+  letter-spacing: -0.02em;
+}
+
+.property-card-title { 
+  font-size: 1.15rem; 
+  margin: 0 0 0.35rem; 
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.property-card-location { 
+  font-size: 0.95rem; 
+  color: var(--color-text-muted); 
+  margin: 0 0 1rem; 
+}
+
+.property-card-specs { 
+  list-style: none; 
+  padding: 0; 
+  margin: auto 0 0 0; /* Push to bottom */
+  font-size: 0.9rem; 
+  color: var(--color-text-muted); 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 0.5rem 1rem; 
+  border-top: 1px solid rgba(0,0,0,0.05);
+  padding-top: 1rem;
+}
+
+/* Featured overrides */
+.property-card--featured .property-card-body { 
+  padding: 1.75rem; 
+}
+.property-card--featured .property-card-title {
+  font-size: 1.35rem;
+}

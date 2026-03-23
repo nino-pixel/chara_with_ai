@@ -224,6 +224,17 @@ export default function Home() {
     return () => document.documentElement.classList.remove('home-scroll-snap')
   }, [])
 
+  /** Global mouse glow tracker for the spotlight effect */
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!homeRootRef.current) return
+      homeRootRef.current.style.setProperty('--mouse-x', `${e.clientX}px`)
+      homeRootRef.current.style.setProperty('--mouse-y', `${e.clientY}px`)
+    }
+    window.addEventListener('mousemove', handleGlobalMouseMove)
+    return () => window.removeEventListener('mousemove', handleGlobalMouseMove)
+  }, [])
+
   /**
    * Fade + slide-up when each snap section enters view (respects reduced motion).
    * Uses takeRecords() after observe — IO often skips the initial callback after refresh,
@@ -374,6 +385,7 @@ export default function Home() {
   if (loading) {
     return (
       <div className="home home--scroll-snap" ref={homeRootRef}>
+        <div className="home-mouse-glow" aria-hidden />
         <section className="hero hero--has-slideshow home-snap-section home-snap-section--visible">
           {heroSlideshow}
           <div className="container hero-inner home-snap-reveal">
@@ -386,6 +398,7 @@ export default function Home() {
 
   return (
     <div className="home home--scroll-snap" ref={homeRootRef}>
+      <div className="home-mouse-glow" aria-hidden />
       <section className="hero hero--has-slideshow home-snap-section">
         {heroSlideshow}
         <div className="container hero-inner home-snap-reveal">

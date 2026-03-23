@@ -29,7 +29,7 @@ html.home-scroll-snap footer.footer {
 .home .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--color-hero) 0%, var(--color-hero-muted) 100%);
+  background: var(--color-hero);
   color: #fff;
   padding: 4rem 0;
   text-align: center;
@@ -180,10 +180,10 @@ html.home-scroll-snap footer.footer {
   inset: 0;
   z-index: 2;
   background: linear-gradient(
-    135deg,
-    rgba(53, 37, 22, 0.82) 0%,
-    rgba(53, 37, 22, 0.55) 45%,
-    rgba(193, 127, 89, 0.35) 100%
+    to bottom,
+    rgba(17, 17, 17, 0.4) 0%,
+    rgba(17, 17, 17, 0.7) 60%,
+    rgba(17, 17, 17, 0.95) 100%
   );
   pointer-events: none;
 }
@@ -255,11 +255,22 @@ html.home-scroll-snap footer.footer {
 }
 .hero-search-input {
   width: 100%;
-  padding: 0.7rem 0.8rem;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.9);
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
+  border-radius: var(--radius-lg);
+  border: var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   color: var(--color-text);
+  box-shadow: var(--shadow-md);
+  transition: all var(--duration) var(--ease);
+}
+.hero-search-input:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px rgba(193, 155, 108, 0.2);
 }
 .hero-actions {
   display: flex;
@@ -441,21 +452,17 @@ html.home-scroll-snap footer.footer {
   width: min(493px, 92vw);
   flex-shrink: 0;
   margin: 0;
-  padding: 1.25rem 1.35rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  box-shadow: 0 2px 12px rgba(53, 37, 22, 0.06);
+  padding: 2rem;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   cursor: grab;
-  /* Shifting wash so cards pick up warm/cool tones as they scroll and as the gradient moves */
-  background: linear-gradient(
-    115deg,
-    var(--color-bg-alt) 0%,
-    rgba(193, 127, 89, 0.14) 38%,
-    var(--color-bg-alt) 72%,
-    rgba(53, 37, 22, 0.07) 100%
-  );
-  background-size: 240% 100%;
-  animation: home-testimonial-card-wash 16s ease-in-out infinite;
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.home-testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
 .home-testimonials-group .home-testimonial-card:nth-child(1) {
@@ -478,17 +485,7 @@ html.home-scroll-snap footer.footer {
 }
 
 @keyframes home-testimonial-card-wash {
-  0%,
-  100% {
-    background-position: 0% 50%;
-    border-color: var(--color-border);
-    box-shadow: 0 2px 12px rgba(53, 37, 22, 0.06);
-  }
-  50% {
-    background-position: 100% 50%;
-    border-color: rgba(193, 127, 89, 0.28);
-    box-shadow: 0 3px 18px rgba(193, 127, 89, 0.12);
-  }
+  /* Removed to avoid jitter on premium clean cards, kept for structural compatibility if needed */
 }
 
 .home-testimonial-card:active {
@@ -641,3 +638,29 @@ html.home-scroll-snap footer.footer {
 .cta-text { margin: 0 0 1rem; opacity: 0.95; }
 .cta-section .btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
 .cta-section .btn-primary:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); color: #fff; text-decoration: none; }
+
+/* Interactive Mouse Spotlight Glow */
+.home {
+  --mouse-x: 50vw;
+  --mouse-y: 50vh;
+}
+.home-mouse-glow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  background: radial-gradient(
+    circle 800px at var(--mouse-x) var(--mouse-y),
+    rgba(193, 155, 108, 0.08) 0%,
+    transparent 80%
+  );
+  mix-blend-mode: color-dodge;
+  transition: opacity 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-mouse-glow { display: none; }
+}
