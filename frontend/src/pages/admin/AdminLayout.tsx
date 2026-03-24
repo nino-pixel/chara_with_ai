@@ -6,7 +6,7 @@ import {
   HiOutlineMenu, 
   HiMoon, 
   HiSun, 
-  // HiOutlineSparkles,
+  HiOutlineSparkles,
   HiOutlineViewGrid,
   HiOutlineUsers,
   HiOutlineHome,
@@ -140,9 +140,9 @@ export default function AdminLayout() {
           <NavLink to="/admin/dashboard">
             <HiOutlineViewGrid className="nav-icon" /> <span>Dashboard</span>
           </NavLink>
-          {/* <NavLink to="/admin/assistant" className="admin-sidebar-nav-ai">
+          <NavLink to="/admin/assistant" className="admin-sidebar-nav-ai">
             <HiOutlineSparkles className="nav-ai-icon" /> <span>AI Assistant</span>
-          </NavLink> */}
+          </NavLink>
           <NavLink to="/admin/clients">
             <HiOutlineUsers className="nav-icon" /> <span>Clients</span>
           </NavLink>
