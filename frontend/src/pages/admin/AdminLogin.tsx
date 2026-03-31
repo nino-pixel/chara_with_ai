@@ -14,10 +14,6 @@ function validateForm(email: string, password: string) {
   if (!e) fieldErrors.email = 'Email is required.'
   else if (!EMAIL_RE.test(e)) fieldErrors.email = 'Enter a valid email address.'
   if (!password) fieldErrors.password = 'Password is required.'
-  else if (password.length < 8) fieldErrors.password = 'Password must be at least 8 characters.'
-  else if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-    fieldErrors.password = 'Password must include both letters and numbers.'
-  }
   return fieldErrors
 }
 
