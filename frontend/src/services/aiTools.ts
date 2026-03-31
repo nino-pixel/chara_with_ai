@@ -1,4 +1,5 @@
-import { SchemaType, type FunctionDeclaration, type Tool } from '@google/generative-ai'
+import { SchemaType } from '@google/generative-ai'
+import type { FunctionDeclaration, Tool } from '@google/generative-ai'
 import { fetchClients, saveClientStore } from './clientsService'
 import { fetchProperties, savePropertyStore } from './propertiesService'
 import { fetchInquiries, saveInquiryStore } from './inquiriesService'
@@ -609,20 +610,20 @@ export function executeTool(name: string, args: Record<string, unknown>): unknow
       const row = {
         id,
         dealId,
-        propertyId: prop?.id ?? null,
+        propertyId: prop?.id ?? undefined,
         propertyTitle: prop?.title ?? (args.propertyTitle as string),
         status: (args.status as string) ?? 'Inquiry',
         amount: price,
         date: (args.date as string) ?? today,
-        paymentMethod: (args.paymentMethod as string) ?? null,
+        payment: (args.paymentMethod as string) ?? undefined,
         adminNotes: (args.adminNotes as string) ?? '',
         createdAt: today,
         updatedAt: today,
-        closingDate: null,
-        expectedClosingDate: (args.expectedClosingDate as string) ?? null,
-        finalSalePrice: null,
-        propertyPrice: prop?.price ?? null,
-        cancelledReason: null,
+        closingDate: undefined,
+        expectedClosingDate: (args.expectedClosingDate as string) ?? undefined,
+        finalSalePrice: undefined,
+        propertyPrice: prop?.price ?? undefined,
+        cancelledReason: undefined,
       }
 
       createDealTransaction(client.id, row)
