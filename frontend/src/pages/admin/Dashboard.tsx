@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, memo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   HiOutlineHome,
@@ -107,147 +107,134 @@ const PROPERTY_STATUS_ORDER: PropertyStatus[] = [
   'cancelled',
 ]
 
-export default function AdminDashboard() {
+export default memo(function AdminDashboard() {
   const navigate = useNavigate()
 
-  const clients = fetchClients()
-  const inquiries = fetchInquiries()
-  const leadsNeedingAttention = useMemo(() => getLeadsNeedingAttention(inquiries, 5), [inquiries])
-  const properties = fetchProperties()
-  const deals = fetchDeals()
-  const activities = getActivityStore()
+  // 1. Data Fetching & Memoized Calculation
+  const data = useMemo(() => {
+    const clients = fetchClients()
+    const inquiries = fetchInquiries()
+    const properties = fetchProperties()
+    const deals = fetchDeals()
+    const activities = getActivityStore()
 
-  const now = new Date()
-  const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth()
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth()
 
-  const activeListings = properties.filter((p) => !p.archived && ['available', 'under_negotiation'].includes(p.status)).length
-  const totalClients = clients.filter((c) => !c.archived).length
+    const activeListings = properties.filter((p) => !p.archived && ['available', 'under_negotiation'].includes(p.status)).length
+    const totalClients = clients.filter((c) => !c.archived).length
 
-  const newLeadsThisMonth = inquiries.filter((lead) => {
-    if (!lead.createdAt) return false
-    const d = new Date(lead.createdAt)
-    return d.getFullYear() === currentYear && d.getMonth() === currentMonth
-  }).length
+    const newLeadsThisMonth = inquiries.filter((lead) => {
+      if (!lead.createdAt) return false
+      const d = new Date(lead.createdAt)
+      return d.getFullYear() === currentYear && d.getMonth() === currentMonth
+    }).length
 
-  const pendingInquiries = inquiries.filter((i) =>
-    ['new', 'contacted', 'qualified'].includes(i.status)
-  ).length
+    const pendingInquiries = inquiries.filter((i) =>
+      ['new', 'contacted', 'qualified'].includes(i.status)
+    ).length
 
-  const monthlySalesData = MONTH_LABELS.map((label, monthIndex) => {
-    const total = deals.reduce((sum, deal) => {
+    const monthlySalesData = MONTH_LABELS.map((label, monthIndex) => {
+      const total = deals.reduce((sum, deal) => {
+        if (deal.status !== 'Closed') return sum
+        const dateStr = deal.closingDate || deal.date
+        if (!dateStr) return sum
+        const d = new Date(dateStr)
+        if (d.getFullYear() !== currentYear || d.getMonth() !== monthIndex) return sum
+        return sum + parsePesoToNumber(deal.price)
+      }, 0)
+      return { month: label, total }
+    })
+
+    const monthlySales = monthlySalesData[currentMonth]?.total ?? 0
+    const closedDeals = deals.filter((d) => d.status === 'Closed').length
+    const totalClosedSales = deals.reduce((sum, deal) => {
       if (deal.status !== 'Closed') return sum
-      const dateStr = deal.closingDate || deal.date
-      if (!dateStr) return sum
-      const d = new Date(dateStr)
-      if (d.getFullYear() !== currentYear || d.getMonth() !== monthIndex) return sum
       return sum + parsePesoToNumber(deal.price)
     }, 0)
-    return { month: label, total }
-  })
+    const averageDealValue = closedDeals === 0 ? null : totalClosedSales / closedDeals
+    const averageDealValueText = averageDealValue == null ? '—' : formatPeso(averageDealValue)
+    const totalLeads = totalClients
+    const conversionRatePercent = totalLeads === 0 ? 0 : (closedDeals / totalLeads) * 100
+    const conversionRateText = conversionRatePercent.toFixed(1) + '%'
 
-  const monthlySales = monthlySalesData[currentMonth]?.total ?? 0
-  const closedDeals = deals.filter((d) => d.status === 'Closed').length
-  const totalClosedSales = deals.reduce((sum, deal) => {
-    if (deal.status !== 'Closed') return sum
-    return sum + parsePesoToNumber(deal.price)
-  }, 0)
-  const averageDealValue = closedDeals === 0 ? null : totalClosedSales / closedDeals
-  const averageDealValueText = averageDealValue == null ? '—' : formatPeso(averageDealValue)
-  const totalLeads = totalClients
-  const conversionRatePercent = totalLeads === 0 ? 0 : (closedDeals / totalLeads) * 100
-  const conversionRateText = conversionRatePercent.toFixed(1) + '%'
+    const clientSourceData = Object.values(
+      clients.reduce<Record<string, { source: string; count: number }>>((acc, c) => {
+        const key = c.source || 'Other'
+        if (!acc[key]) acc[key] = { source: key, count: 0 }
+        acc[key].count += 1
+        return acc
+      }, {})
+    )
 
-  const clientSourceData = Object.values(
-    clients.reduce<Record<string, { source: string; count: number }>>((acc, c) => {
-      const key = c.source || 'Other'
-      if (!acc[key]) acc[key] = { source: key, count: 0 }
-      acc[key].count += 1
-      return acc
-    }, {})
-  )
-
-  const propertyStatusData = PROPERTY_STATUS_ORDER.map((statusKey) => {
-    const count = properties.filter((p) => {
-      const normalizedStatus: PropertyStatus = p.archived ? 'archived' : p.status
-      return normalizedStatus === statusKey
-    }).length
-    return {
-      name: PROPERTY_STATUS_LABELS[statusKey],
-      value: count,
-      statusKey,
-    }
-  })
-
-  const inquiriesPerMonth = MONTH_LABELS.map((label, monthIndex) => {
-    const count = inquiries.reduce((sum, lead) => {
-      if (!lead.createdAt) return sum
-      const d = new Date(lead.createdAt)
-      if (d.getFullYear() !== currentYear || d.getMonth() !== monthIndex) return sum
-      return sum + 1
-    }, 0)
-    return { month: label, count }
-  })
-
-  const recentActivityRows = activities.slice(0, 5)
-
-  const summary = {
-    totalClients,
-    activeListings,
-    newLeadsThisMonth,
-    pendingInquiries,
-    monthlySales,
-    closedDeals,
-    conversionRateText,
-    averageDealValueText,
-  }
-
-  const dealsPipelineCounts = deals.reduce(
-    (acc, deal) => {
-      switch (deal.status) {
-        case 'Inquiry':
-          acc.inquiry += 1
-          break
-        case 'Negotiation':
-          acc.negotiating += 1
-          break
-        case 'Reserved':
-          acc.reserved += 1
-          break
-        case 'Processing Documents':
-          acc.processing += 1
-          break
-        case 'Closed':
-          acc.closed += 1
-          break
-        case 'Cancelled':
-          acc.cancelled += 1
-          break
-        default:
-          break
+    const propertyStatusData = PROPERTY_STATUS_ORDER.map((statusKey) => {
+      const count = properties.filter((p) => {
+        const normalizedStatus: PropertyStatus = p.archived ? 'archived' : p.status
+        return normalizedStatus === statusKey
+      }).length
+      return {
+        name: PROPERTY_STATUS_LABELS[statusKey],
+        value: count,
+        statusKey,
       }
-      return acc
-    },
-    { inquiry: 0, negotiating: 0, reserved: 0, processing: 0, closed: 0, cancelled: 0 }
-  )
+    })
 
-  const dealsPipelineData = [
-    {
-      stage: 'Pipeline',
-      inquiry: dealsPipelineCounts.inquiry,
-      negotiating: dealsPipelineCounts.negotiating,
-      reserved: dealsPipelineCounts.reserved,
-      processing: dealsPipelineCounts.processing,
-      closed: dealsPipelineCounts.closed,
-      cancelled: dealsPipelineCounts.cancelled,
-    },
-  ]
+    const inquiriesPerMonth = MONTH_LABELS.map((label, monthIndex) => {
+      const count = inquiries.reduce((sum, lead) => {
+        if (!lead.createdAt) return sum
+        const d = new Date(lead.createdAt)
+        if (d.getFullYear() !== currentYear || d.getMonth() !== monthIndex) return sum
+        return sum + 1
+      }, 0)
+      return { month: label, count }
+    })
 
-  const dealsPipelineHasData = Object.values(dealsPipelineCounts).some((v) => v > 0)
-  const monthlySalesHasData = monthlySalesData.some((row) => row.total > 0)
-  const leadsPerMonthHasData = inquiriesPerMonth.some((row) => row.count > 0)
-  const clientSourceHasData = clientSourceData.some((row) => row.count > 0)
-  const propertyStatusHasData = propertyStatusData.some((row) => row.value > 0)
+    const dealsPipelineCounts = deals.reduce(
+      (acc, deal) => {
+        switch (deal.status) {
+          case 'Inquiry': acc.inquiry += 1; break
+          case 'Negotiation': acc.negotiating += 1; break
+          case 'Reserved': acc.reserved += 1; break
+          case 'Processing Documents': acc.processing += 1; break
+          case 'Closed': acc.closed += 1; break
+          case 'Cancelled': acc.cancelled += 1; break
+        }
+        return acc
+      },
+      { inquiry: 0, negotiating: 0, reserved: 0, processing: 0, closed: 0, cancelled: 0 }
+    )
+
+    const leadsNeedingAttention = getLeadsNeedingAttention(inquiries, 5)
+    
+    return {
+      activeListings,
+      totalClients,
+      newLeadsThisMonth,
+      pendingInquiries,
+      monthlySalesData,
+      monthlySales,
+      closedDeals,
+      averageDealValueText,
+      conversionRateText,
+      clientSourceData,
+      propertyStatusData,
+      inquiriesPerMonth,
+      dealsPipelineData: [{
+        stage: 'Pipeline',
+        ...dealsPipelineCounts
+      }],
+      recentActivityRows: activities.slice(0, 5),
+      leadsNeedingAttention,
+      hasData: {
+        dealsPipeline: Object.values(dealsPipelineCounts).some(v => v > 0),
+        monthlySales: monthlySalesData.some(row => row.total > 0),
+        leadsPerMonth: inquiriesPerMonth.some(row => row.count > 0),
+        clientSource: clientSourceData.some(row => row.count > 0),
+        propertyStatus: propertyStatusData.some(row => row.value > 0),
+      }
+    }
+  }, []) // Empty deps for static local storage data, or could add [clients.length, inquiries.length, etc] if they were external
 
   const handlePropertyStatusClick = (data: { statusKey?: string }) => {
     if (data?.statusKey) navigate(`/admin/properties?status=${data.statusKey}`)
@@ -257,19 +244,12 @@ export default function AdminDashboard() {
     dataKey: 'inquiry' | 'negotiating' | 'reserved' | 'processing' | 'closed' | 'cancelled'
   ) => {
     const status =
-      dataKey === 'inquiry'
-        ? 'Inquiry'
-        : dataKey === 'reserved'
-        ? 'Reserved'
-        : dataKey === 'negotiating'
-        ? 'Negotiation'
-        : dataKey === 'processing'
-        ? 'Processing Documents'
-        : dataKey === 'cancelled'
-        ? 'Cancelled'
-        : 'Closed'
-    const encoded = encodeURIComponent(status)
-    navigate(`/admin/deals?status=${encoded}`)
+      dataKey === 'inquiry' ? 'Inquiry' :
+      dataKey === 'reserved' ? 'Reserved' :
+      dataKey === 'negotiating' ? 'Negotiation' :
+      dataKey === 'processing' ? 'Processing Documents' :
+      dataKey === 'cancelled' ? 'Cancelled' : 'Closed'
+    navigate(`/admin/deals?status=${encodeURIComponent(status)}`)
   }
 
   const handleAttentionLeadClick = (id: string) => {
@@ -279,154 +259,124 @@ export default function AdminDashboard() {
   const handleActivityRowClick = (row: ActivityLogEntry) => {
     if (!row.entityId) return
     const id = encodeURIComponent(row.entityId)
-    if (row.entityType === 'deal') {
-      navigate(`/admin/deals?dealId=${id}`)
-    } else if (row.entityType === 'property') {
-      navigate(`/admin/properties?propertyId=${id}`)
-    } else if (row.entityType === 'client') {
-      navigate(`/admin/clients?clientId=${id}`)
-    }
+    if (row.entityType === 'deal') navigate(`/admin/deals?dealId=${id}`)
+    else if (row.entityType === 'property') navigate(`/admin/properties?propertyId=${id}`)
+    else if (row.entityType === 'client') navigate(`/admin/clients?clientId=${id}`)
   }
+
   return (
     <div className="admin-dashboard">
       <h1 className="admin-page-title">Dashboard</h1>
 
-      {/* 1. Summary cards — max 7 */}
+      {/* Summary cards */}
       <section className="dashboard-section dashboard-cards">
         <Link to="/admin/clients" className="admin-stat-card dashboard-card dashboard-card--blue">
           <div className="dashboard-card-icon"><HiOutlineUsers /></div>
           <div className="dashboard-card-content">
-            <span className="admin-stat-value">{summary.totalClients}</span>
+            <span className="admin-stat-value">{data.totalClients}</span>
             <span className="admin-stat-label">Total Clients</span>
           </div>
         </Link>
-        <Link
-          to="/admin/properties?status=available"
-          className="admin-stat-card dashboard-card dashboard-card--green"
-        >
+        <Link to="/admin/properties?status=available" className="admin-stat-card dashboard-card dashboard-card--green">
           <div className="dashboard-card-icon"><HiOutlineHome /></div>
           <div className="dashboard-card-content">
-            <span className="admin-stat-value">{summary.activeListings}</span>
+            <span className="admin-stat-value">{data.activeListings}</span>
             <span className="admin-stat-label">Active Listings</span>
           </div>
         </Link>
         <Link to="/admin/inquiries" className="admin-stat-card dashboard-card dashboard-card--teal">
           <div className="dashboard-card-icon"><HiOutlineChatAlt2 /></div>
           <div className="dashboard-card-content">
-            <span className="admin-stat-value">{summary.newLeadsThisMonth}</span>
+            <span className="admin-stat-value">{data.newLeadsThisMonth}</span>
             <span className="admin-stat-label">New Leads (This Month)</span>
           </div>
         </Link>
         <Link to="/admin/inquiries" className="admin-stat-card dashboard-card dashboard-card--red">
           <div className="dashboard-card-icon"><HiOutlineClipboardList /></div>
           <div className="dashboard-card-content">
-            <span className="admin-stat-value">{summary.pendingInquiries}</span>
+            <span className="admin-stat-value">{data.pendingInquiries}</span>
             <span className="admin-stat-label">Pending Inquiries</span>
           </div>
         </Link>
-        <Link
-          to="/admin/deals?status=Closed"
-          className="admin-stat-card dashboard-card dashboard-card--yellow"
-        >
+        <Link to="/admin/deals?status=Closed" className="admin-stat-card dashboard-card dashboard-card--yellow">
           <div className="dashboard-card-icon"><HiOutlineCurrencyDollar /></div>
           <div className="dashboard-card-content">
-            <span className="admin-stat-value">{formatPeso(summary.monthlySales)}</span>
+            <span className="admin-stat-value">{formatPeso(data.monthlySales)}</span>
             <span className="admin-stat-label">Monthly Sales</span>
           </div>
         </Link>
-        <Link
-          to="/admin/deals?status=Closed"
-          className="admin-stat-card dashboard-card dashboard-card--purple"
-        >
+        <Link to="/admin/deals?status=Closed" className="admin-stat-card dashboard-card dashboard-card--purple">
           <div className="dashboard-card-icon"><HiOutlineCheckCircle /></div>
           <div className="dashboard-card-content">
-            <span className="admin-stat-value">{summary.closedDeals}</span>
+            <span className="admin-stat-value">{data.closedDeals}</span>
             <span className="admin-stat-label">Closed Deals</span>
           </div>
         </Link>
         <Link to="/admin/deals" className="admin-stat-card dashboard-card dashboard-card--blue">
           <div className="dashboard-card-icon"><HiOutlineTrendingUp /></div>
           <div className="dashboard-card-content">
-            <span className="admin-stat-value">{summary.conversionRateText}</span>
+            <span className="admin-stat-value">{data.conversionRateText}</span>
             <span className="admin-stat-label">Deal Conversion</span>
           </div>
         </Link>
         <Link to="/admin/deals?status=Closed" className="admin-stat-card dashboard-card dashboard-card--teal">
           <div className="dashboard-card-icon"><HiOutlineChartBar /></div>
           <div className="dashboard-card-content">
-            <span className="admin-stat-value">{summary.averageDealValueText}</span>
+            <span className="admin-stat-value">{data.averageDealValueText}</span>
             <span className="admin-stat-label">Avg Deal Value</span>
           </div>
         </Link>
       </section>
 
-      {/* Deals pipeline + Leads per month — side by side */}
-      <section className="dashboard-section dashboard-charts-row dashboard-charts-row--pipeline-leads">
+      {/* Pipeline + Leads Month */}
+      <section className="dashboard-section dashboard-charts-row">
         <div className="dashboard-chart-block dashboard-chart-block--half">
           <h2 className="dashboard-chart-title">Deals Pipeline</h2>
           <div className="dashboard-chart-wrap dashboard-chart-wrap--bar-inline dashboard-chart-wrap--pipeline">
-            {dealsPipelineHasData ? (
+            {data.hasData.dealsPipeline ? (
               <ResponsiveContainer width="100%" height={240}>
-                <BarChart
-                  data={dealsPipelineData}
-                  layout="vertical"
-                  margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
-                >
+                <BarChart data={data.dealsPipelineData} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis type="number" tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
-                  <YAxis
-                    type="category"
-                    dataKey="stage"
-                    width={72}
-                    tick={{ fontSize: 13 }}
-                    stroke="var(--color-text-muted)"
-                  />
+                  <YAxis type="category" dataKey="stage" width={72} tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
                   <Tooltip />
                   <Legend />
-                  <Bar className="bar-inquiry" dataKey="inquiry" stackId="pipeline" fill="#3b82f6" name="Inquiry" onClick={() => handleDealsPipelineClick('inquiry')} />
-                  <Bar className="bar-negotiating" dataKey="negotiating" stackId="pipeline" fill="#f97316" name="Negotiation" onClick={() => handleDealsPipelineClick('negotiating')} />
-                  <Bar className="bar-reserved" dataKey="reserved" stackId="pipeline" fill="#8b5cf6" name="Reserved" onClick={() => handleDealsPipelineClick('reserved')} />
-                  <Bar className="bar-processing" dataKey="processing" stackId="pipeline" fill="#6366f1" name="Processing Documents" onClick={() => handleDealsPipelineClick('processing')} />
-                  <Bar className="bar-closed" dataKey="closed" stackId="pipeline" fill="#16a34a" name="Closed" onClick={() => handleDealsPipelineClick('closed')} />
-                  <Bar className="bar-cancelled" dataKey="cancelled" stackId="pipeline" fill="#ef4444" name="Cancelled" onClick={() => handleDealsPipelineClick('cancelled')} />
+                  <Bar dataKey="inquiry" stackId="pipeline" fill="#3b82f6" name="Inquiry" onClick={() => handleDealsPipelineClick('inquiry')} />
+                  <Bar dataKey="negotiating" stackId="pipeline" fill="#f97316" name="Negotiation" onClick={() => handleDealsPipelineClick('negotiating')} />
+                  <Bar dataKey="reserved" stackId="pipeline" fill="#8b5cf6" name="Reserved" onClick={() => handleDealsPipelineClick('reserved')} />
+                  <Bar dataKey="processing" stackId="pipeline" fill="#6366f1" name="Processing Documents" onClick={() => handleDealsPipelineClick('processing')} />
+                  <Bar dataKey="closed" stackId="pipeline" fill="#16a34a" name="Closed" onClick={() => handleDealsPipelineClick('closed')} />
+                  <Bar dataKey="cancelled" stackId="pipeline" fill="#ef4444" name="Cancelled" onClick={() => handleDealsPipelineClick('cancelled')} />
                 </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                No data available
-              </div>
-            )}
+            ) : <div className="dashboard-empty-chart">No data available</div>}
           </div>
         </div>
         <div className="dashboard-chart-block dashboard-chart-block--half">
           <h2 className="dashboard-chart-title">Leads Created per Month</h2>
           <div className="dashboard-chart-wrap dashboard-chart-wrap--bar-inline dashboard-chart-wrap--leads-month">
-            {leadsPerMonthHasData ? (
+            {data.hasData.leadsPerMonth ? (
               <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={inquiriesPerMonth} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
+                <BarChart data={data.inquiriesPerMonth} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis dataKey="month" tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
                   <YAxis tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
                   <Tooltip />
-                  <Bar className="bar-leads" dataKey="count" fill="#4a6b7a" radius={[4, 4, 0, 0]} name="Leads" />
+                  <Bar dataKey="count" fill="#4a6b7a" radius={[4, 4, 0, 0]} name="Leads" />
                 </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                No data available
-              </div>
-            )}
+            ) : <div className="dashboard-empty-chart">No data available</div>}
           </div>
         </div>
       </section>
 
-      {/* 2. Area chart — Sales trend */}
+      {/* Sales trend */}
       <section className="dashboard-section dashboard-chart-block">
         <h2 className="dashboard-chart-title">Monthly Sales (Deal Amount)</h2>
         <div className="dashboard-chart-wrap dashboard-chart-wrap--line">
-          {monthlySalesHasData ? (
+          {data.hasData.monthlySales ? (
             <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={monthlySalesData} margin={{ top: 16, right: 24, left: 8, bottom: 8 }}>
+              <AreaChart data={data.monthlySalesData} margin={{ top: 16, right: 24, left: 8, bottom: 8 }}>
                 <defs>
                   <linearGradient id="salesAreaGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#c19b6c" stopOpacity={0.45} />
@@ -434,79 +384,42 @@ export default function AdminDashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontSize: 13, fill: 'var(--color-text-muted)' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tickFormatter={(v) => formatPeso(v)}
-                  tick={{ fontSize: 13, fill: 'var(--color-text-muted)' }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={70}
-                />
-                <Tooltip
-                  formatter={(v: number | undefined) => [v != null ? formatPeso(v) : '—', 'Sales']}
-                  labelFormatter={(l) => `Month: ${l}`}
-                  contentStyle={{
-                    background: 'rgba(20,20,20,0.92)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '10px',
-                    fontSize: '13px',
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="total"
-                  stroke="#c19b6c"
-                  strokeWidth={2.5}
-                  fill="url(#salesAreaGradient)"
-                  dot={false}
-                  activeDot={{ r: 5, fill: '#c19b6c', strokeWidth: 0 }}
-                  name="Sales"
-                />
+                <XAxis dataKey="month" tick={{ fontSize: 13, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={(v) => formatPeso(v)} tick={{ fontSize: 13, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} width={70} />
+                <Tooltip formatter={(v: number | undefined) => [v != null ? formatPeso(v) : '0.00', 'Sales']} />
+                <Area type="monotone" dataKey="total" stroke="#c19b6c" strokeWidth={2.5} fill="url(#salesAreaGradient)" name="Sales" />
               </AreaChart>
             </ResponsiveContainer>
-          ) : (
-            <div style={{ minHeight: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>
-              No data available
-            </div>
-          )}
+          ) : <div className="dashboard-empty-chart">No data available</div>}
         </div>
       </section>
 
-      {/* 3. Bar (source) + Pie (status) */}
+      {/* Client Source + Prop Status */}
       <section className="dashboard-section dashboard-charts-row">
         <div className="dashboard-chart-block dashboard-chart-block--half">
           <h2 className="dashboard-chart-title">Client Source</h2>
           <div className="dashboard-chart-wrap dashboard-chart-wrap--bar">
-            {clientSourceHasData ? (
+            {data.hasData.clientSource ? (
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={clientSourceData} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }}>
+                <BarChart data={data.clientSourceData} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis type="number" tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
                   <YAxis type="category" dataKey="source" width={72} tick={{ fontSize: 13 }} stroke="var(--color-text-muted)" />
                   <Tooltip />
-                  <Bar className="bar-clients" dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} name="Clients" />
+                  <Bar dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} name="Clients" />
                 </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div style={{ minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                No data available
-              </div>
-            )}
+            ) : <div className="dashboard-empty-chart">No data available</div>}
           </div>
         </div>
         <div className="dashboard-chart-block dashboard-chart-block--half">
           <h2 className="dashboard-chart-title">Property Status</h2>
           <div className="dashboard-chart-wrap dashboard-chart-wrap--pie">
-            {propertyStatusHasData ? (
+            {data.hasData.propertyStatus ? (
               <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
                   <Pie
-                    data={propertyStatusData}
+                    data={data.propertyStatusData}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
@@ -515,24 +428,20 @@ export default function AdminDashboard() {
                     onClick={handlePropertyStatusClick}
                     style={{ cursor: 'pointer' }}
                   >
-                    {propertyStatusData.map((_, i) => (
+                    {data.propertyStatusData.map((_, i) => (
                       <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number | undefined) => [v ?? '—', 'Units']} />
+                  <Tooltip />
                   <Legend iconSize={10} iconType="circle" wrapperStyle={{ fontSize: '13px' }} />
                 </PieChart>
               </ResponsiveContainer>
-            ) : (
-              <div style={{ minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                No data available
-              </div>
-            )}
+            ) : <div className="dashboard-empty-chart">No data available</div>}
           </div>
         </div>
       </section>
 
-      {/* Leads needing attention + Recent activity — side by side */}
+      {/* Attention Leads + Recent Activity */}
       <section className="dashboard-section dashboard-leads-activity-row">
         <div className="dashboard-leads-activity-panel dashboard-leads-attention">
           <h2 className="dashboard-chart-title">Leads Needing Attention</h2>
@@ -547,47 +456,19 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {leadsNeedingAttention.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="dashboard-leads-attention-empty">
-                      No overdue or &ldquo;due today&rdquo; leads — you&apos;re caught up.
-                    </td>
-                  </tr>
-                ) : (
-                  leadsNeedingAttention.map((row) => {
-                    const kind = getFollowUpUiKind(row)
-                    return (
-                      <tr
-                        key={row.id}
-                        className={`dashboard-leads-attention-row ${kind ? `admin-inquiry-row--followup-${kind}` : ''}`}
-                        onClick={() => handleAttentionLeadClick(row.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            handleAttentionLeadClick(row.id)
-                          }
-                        }}
-                        role="button"
-                        tabIndex={0}
-                      >
-                        <td>{row.name}</td>
-                        <td>{row.propertyTitle}</td>
-                        <td>{INQUIRY_STATUS_LABELS_DASH[row.status]}</td>
-                        <td>
-                          {kind ? (
-                            <span
-                              className={`admin-inquiry-followup-tag admin-inquiry-followup-tag--${kind} dashboard-leads-attention-tag`}
-                            >
-                              {followUpTagLabel(kind)}
-                            </span>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
+                {data.leadsNeedingAttention.length === 0 ? (
+                  <tr><td colSpan={4} className="dashboard-leads-attention-empty">No overdue leads.</td></tr>
+                ) : data.leadsNeedingAttention.map((row) => {
+                  const kind = getFollowUpUiKind(row)
+                  return (
+                    <tr key={row.id} className={`dashboard-leads-attention-row ${kind ? `admin-inquiry-row--followup-${kind}` : ''}`} onClick={() => handleAttentionLeadClick(row.id)} role="button" tabIndex={0}>
+                      <td>{row.name}</td>
+                      <td>{row.propertyTitle}</td>
+                      <td>{INQUIRY_STATUS_LABELS_DASH[row.status]}</td>
+                      <td>{kind ? <span className={`admin-inquiry-followup-tag admin-inquiry-followup-tag--${kind} dashboard-leads-attention-tag`}>{followUpTagLabel(kind)}</span> : '—'}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -596,26 +477,19 @@ export default function AdminDashboard() {
           <h2 className="dashboard-chart-title">Recent Activity</h2>
           <div className="admin-table-wrap">
             <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Activity</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
+              <thead><tr><th>Activity</th><th>Date</th></tr></thead>
               <tbody>
-                {recentActivityRows.map((row, i) => {
+                {data.recentActivityRows.map((row, i) => {
                   const Icon = ACTIVITY_ICONS[mapActivityType(row)]
-                  const date = row.at.slice(0, 10)
-                  const message = row.details || row.entityLabel || '—'
                   return (
                     <tr key={i} onClick={() => handleActivityRowClick(row)}>
                       <td>
                         <span className="dashboard-activity-cell">
-                          {Icon && <Icon className="dashboard-activity-icon" aria-hidden />}
-                          <span>{message}</span>
+                          {Icon && <Icon className="dashboard-activity-icon" />}
+                          <span>{row.details || row.entityLabel || '—'}</span>
                         </span>
                       </td>
-                      <td>{date}</td>
+                      <td>{row.at.slice(0, 10)}</td>
                     </tr>
                   )
                 })}
@@ -626,4 +500,4 @@ export default function AdminDashboard() {
       </section>
     </div>
   )
-}
+})
